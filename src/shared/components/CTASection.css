@@ -1,0 +1,372 @@
+/* ==================== CTA SECTION ==================== */
+.cta-section {
+  padding: 120px 20px;
+  background: linear-gradient(180deg, #f8f9ff 0%, #f0f4ff 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.cta-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+}
+
+/* ==================== CENTER CONTENT ==================== */
+.cta-content {
+  text-align: center;
+  padding: 20px;
+  z-index: 10;
+}
+
+.cta-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.cta-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 40px;
+  font-weight: 400;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 40px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.cta-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(124, 58, 237, 0.4);
+}
+
+.btn-arrow {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-button:hover .btn-arrow {
+  transform: translateX(5px);
+}
+
+/* ==================== SIDE CARDS ==================== */
+.cta-card-left,
+.cta-card-right {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.cta-card-left {
+  animation: floatLeft 6s ease-in-out infinite;
+}
+
+.cta-card-right {
+  animation: floatRight 6s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.cta-card-left:hover,
+.cta-card-right:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes floatLeft {
+  0%, 100% {
+    transform: translateY(0px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-2deg);
+  }
+}
+
+@keyframes floatRight {
+  0%, 100% {
+    transform: translateY(0px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+}
+
+/* ==================== PAYMENT CARD (LEFT) ==================== */
+.payment-card {
+  transform: rotate(-2deg);
+}
+
+.card-header {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.payment-item:last-child {
+  border-bottom: none;
+}
+
+.payment-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.credit-card-icon {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+}
+
+.cash-icon {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.bank-icon {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.payment-details {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-method {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.payment-amount {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.payment-amount.cyan {
+  color: #06b6d4;
+}
+
+.payment-amount.yellow {
+  color: #f59e0b;
+}
+
+.payment-amount.gray {
+  color: #6b7280;
+}
+
+/* ==================== BOOKING CARD (RIGHT) ==================== */
+.booking-card {
+  transform: rotate(2deg);
+  position: relative;
+}
+
+.booking-badge {
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  background: white;
+  color: #7c3aed;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid #7c3aed;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.booking-header {
+  margin-bottom: 20px;
+}
+
+.booking-title {
+  font-size: 13px;
+  color: #0a0a1f;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.booking-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.booking-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.donut-chart {
+  width: 160px;
+  height: 160px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 1200px) {
+  .cta-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .cta-card-left,
+  .cta-card-right {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .cta-content {
+    order: -1;
+  }
+
+  .cta-card-left {
+    transform: rotate(0deg);
+  }
+
+  .cta-card-right {
+    transform: rotate(0deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .cta-section {
+    padding: 80px 20px;
+  }
+
+  .cta-title {
+    font-size: 2rem;
+  }
+
+  .cta-description {
+    font-size: 15px;
+    margin-bottom: 30px;
+  }
+
+  .cta-description br {
+    display: none;
+  }
+
+  .cta-button {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+
+  .cta-card-left,
+  .cta-card-right {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-title br {
+    display: none;
+  }
+
+  .cta-title {
+    font-size: 1.75rem;
+  }
+
+  .payment-item {
+    padding: 12px 0;
+  }
+
+  .payment-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .donut-chart {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cta-content {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.cta-card-left {
+  animation: fadeInUp 0.8s ease-out 0.2s backwards, floatLeft 6s ease-in-out infinite 0.8s;
+}
+
+.cta-card-right {
+  animation: fadeInUp 0.8s ease-out 0.4s backwards, floatRight 6s ease-in-out infinite 1.2s;
+}

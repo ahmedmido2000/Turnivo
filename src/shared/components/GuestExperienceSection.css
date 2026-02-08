@@ -1,0 +1,338 @@
+/* ==================== GUEST EXPERIENCE SECTION ==================== */
+.guest-experience-section {
+  padding: 100px 20px;
+  background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+  overflow: hidden;
+}
+
+.guest-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* ==================== LEFT IMAGE CONTAINER ==================== */
+.guest-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.guest-card {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 24px;
+  overflow: visible;
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+/* Guest Photo */
+.guest-photo {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.guest-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Check-in Status Overlay */
+.checkin-status-overlay {
+  position: absolute;
+  top: 30px;
+  left: -10%;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 260px;
+  animation: slideInLeft 1s ease-out;
+}
+
+.hotel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.hotel-logo {
+  font-size: 24px;
+}
+
+.hotel-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0a0a1f;
+}
+
+.menu-dots {
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.checkin-badge-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.checkin-badge {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+
+.date-badge {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-icon {
+  font-size: 14px;
+}
+
+.status-message {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.status-text {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.status-complete {
+  color: #06b6d4;
+  font-weight: 700;
+}
+
+/* ==================== RIGHT CONTENT ==================== */
+.guest-content {
+  padding: 20px;
+}
+
+.guest-label {
+  display: inline-block;
+  color: #7c3aed;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.guest-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.guest-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+.guest-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.guest-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.guest-cta:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.guest-cta:hover {
+  background: rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
+}
+
+.guest-cta .cta-arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.guest-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 968px) {
+  .guest-container {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .guest-content {
+    text-align: center;
+    order: -1; /* Move content above image on mobile */
+  }
+
+  .guest-description br {
+    display: none;
+  }
+
+  .guest-cta {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .guest-experience-section {
+    padding: 60px 20px;
+  }
+
+  .guest-title {
+    font-size: 2rem;
+  }
+
+  .guest-description {
+    font-size: 15px;
+  }
+
+  .guest-photo {
+    height: 320px;
+  }
+
+  .checkin-status-overlay {
+    top: 20px;
+    left: 20px;
+    min-width: 220px;
+    padding: 14px;
+  }
+
+  .hotel-name {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .guest-title br {
+    display: none;
+  }
+
+  .guest-card {
+    max-width: 100%;
+  }
+
+  .guest-photo {
+    height: 280px;
+  }
+
+  .checkin-status-overlay {
+    min-width: 200px;
+    padding: 12px;
+  }
+
+  .checkin-badge-container {
+    flex-direction: column;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.guest-image-container {
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+.guest-content {
+  animation: fadeInRight 0.8s ease-out;
+}

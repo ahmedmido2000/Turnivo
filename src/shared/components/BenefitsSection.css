@@ -1,0 +1,344 @@
+/* ==================== BENEFITS SECTION ==================== */
+.benefits-section {
+  padding: 100px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+  overflow: hidden;
+}
+
+.benefits-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* ==================== LEFT CONTENT ==================== */
+.benefits-content {
+  padding: 20px;
+}
+
+.benefits-label {
+  display: inline-block;
+  color: #7c3aed;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.benefits-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.benefits-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+.benefits-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.benefits-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.benefits-cta:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.benefits-cta:hover {
+  background: rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
+}
+
+.cta-arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.benefits-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== RIGHT IMAGE CONTAINER ==================== */
+.benefits-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.benefits-card {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 24px;
+  overflow: visible;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  background: #f5f5f5;
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+@keyframes floatCard {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Hotel Scene */
+.hotel-scene {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+}
+
+.hotel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Check-in Interface Overlay */
+.checkin-interface {
+  position: absolute;
+  bottom: 30px;
+  left: -10%;
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  animation: slideUp 1s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guest-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.guest-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vip-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.guest-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0a0a1f;
+  margin-top: 4px;
+}
+
+.checkin-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+  margin-top: 8px;
+}
+
+.checkin-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(124, 58, 237, 0.4);
+}
+
+.checkin-icon {
+  font-size: 16px;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 968px) {
+  .benefits-container {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .benefits-content {
+    text-align: center;
+  }
+
+  .benefits-description br {
+    display: none;
+  }
+
+  .benefits-cta {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .benefits-section {
+    padding: 60px 20px;
+  }
+
+  .benefits-title {
+    font-size: 2rem;
+  }
+
+  .benefits-description {
+    font-size: 15px;
+  }
+
+  .hotel-scene {
+    height: 320px;
+  }
+
+  .hotel-door {
+    width: 100px;
+    height: 180px;
+  }
+
+  .hotel-guest {
+    width: 60px;
+    height: 120px;
+  }
+
+  .checkin-interface {
+    min-width: 200px;
+    padding: 16px 20px;
+  }
+
+  .guest-avatar {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (max-width: 480px) {
+  .benefits-title br {
+    display: none;
+  }
+
+  .benefits-card {
+    max-width: 100%;
+  }
+
+  .hotel-scene {
+    height: 280px;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.benefits-content {
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+.benefits-image-container {
+  animation: fadeInRight 0.8s ease-out;
+}

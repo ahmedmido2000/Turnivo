@@ -1,0 +1,252 @@
+/* ==================== REVIEWS SECTION ==================== */
+.reviews-section {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+  padding: 100px 20px;
+}
+
+.reviews-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ==================== HEADER ==================== */
+.reviews-header {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.reviews-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+  animation: float 3s ease-in-out infinite;
+}
+
+.badge-icon {
+  font-size: 18px;
+}
+
+.reviews-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+}
+
+.reviews-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* ==================== REVIEW CARDS ==================== */
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.review-card {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-radius: 20px;
+  padding: 32px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.review-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.review-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.review-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.review-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(124, 58, 237, 0.15);
+}
+
+/* Stars */
+.review-stars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.star {
+  font-size: 20px;
+  color: #7c3aed;
+}
+
+/* Quote */
+.review-quote {
+  font-size: clamp(1.125rem, 2vw, 1.25rem);
+  font-weight: 700;
+  color: #0a0a1f;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+/* Testimonial */
+.review-testimonial {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* Author */
+.review-author {
+  padding-top: 20px;
+  border-top: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.author-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a0a1f;
+  margin-bottom: 4px;
+}
+
+.author-hotel {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ==================== CTA BUTTON ==================== */
+.reviews-cta-wrapper {
+  text-align: center;
+}
+
+.reviews-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+.reviews-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+}
+
+.arrow {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.reviews-cta:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 1200px) {
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .review-card:nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .reviews-section {
+    padding: 60px 20px;
+  }
+
+  .reviews-header {
+    margin-bottom: 40px;
+  }
+
+  .reviews-title {
+    font-size: 2rem;
+  }
+
+  .reviews-description br {
+    display: none;
+  }
+
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .review-card {
+    padding: 24px;
+  }
+
+  .review-card:nth-child(3) {
+    grid-column: auto;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .reviews-title br {
+    display: none;
+  }
+
+  .review-card {
+    padding: 20px;
+  }
+
+  .review-quote {
+    font-size: 1.125rem;
+  }
+
+  .review-testimonial {
+    font-size: 13px;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}

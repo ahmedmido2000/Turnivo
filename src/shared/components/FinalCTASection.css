@@ -1,0 +1,365 @@
+/* ==================== FINAL CTA SECTION ==================== */
+.final-cta-section {
+  background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+  padding: 120px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  position: relative;
+}
+
+/* ==================== CENTER CONTENT ==================== */
+.final-cta-content {
+  text-align: center;
+  z-index: 2;
+  max-width: 700px;
+}
+
+.final-cta-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.final-cta-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  animation: fadeInUp 0.8s ease-out 0.1s;
+  animation-fill-mode: both;
+}
+
+.final-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+  animation: fadeInUp 0.8s ease-out 0.2s;
+  animation-fill-mode: both;
+}
+
+.final-cta-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(124, 58, 237, 0.5);
+}
+
+.arrow {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.final-cta-button:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== FLOATING CARDS ==================== */
+.floating-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  animation: float 6s ease-in-out infinite;
+}
+
+.left-card {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(-5deg);
+  width: 280px;
+  animation-delay: 0s;
+}
+
+.right-card {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(5deg);
+  width: 300px;
+  animation-delay: 3s;
+}
+
+/* ==================== LEFT CARD - BOOKINGS ==================== */
+.card-header {
+  margin-bottom: 20px;
+}
+
+.card-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #7c3aed;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.card-subtitle {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.donut-chart {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 20px;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  font-weight: 900;
+  color: #0a0a1f;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-dot.purple {
+  background: #7c3aed;
+}
+
+.legend-text {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ==================== RIGHT CARD - ROOM INSPECTION ==================== */
+.card-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.card-title-small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a0a1f;
+}
+
+.card-menu {
+  font-size: 20px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.priority-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.task-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.task-row {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.task-row:nth-child(1) {
+  width: 100%;
+}
+
+.task-row:nth-child(2) {
+  width: 80%;
+}
+
+.task-row:nth-child(3) {
+  width: 60%;
+}
+
+.assignees {
+  display: flex;
+  align-items: center;
+  gap: -8px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-left: -8px;
+}
+
+.avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar-1 {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.avatar-2 {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.avatar-3 {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.avatar-count {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-left: -8px;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-icon {
+  font-size: 16px;
+}
+
+.comment-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(-50%) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-55%) rotate(-5deg);
+  }
+}
+
+.right-card {
+  animation-name: floatRight;
+}
+
+@keyframes floatRight {
+  0%, 100% {
+    transform: translateY(-50%) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-55%) rotate(5deg);
+  }
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 1200px) {
+  .floating-card {
+    display: none;
+  }
+
+  .final-cta-container {
+    gap: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .final-cta-section {
+    padding: 80px 20px;
+  }
+
+  .final-cta-title {
+    font-size: 2rem;
+  }
+
+  .final-cta-description br {
+    display: none;
+  }
+
+  .final-cta-button {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .final-cta-title br {
+    display: none;
+  }
+
+  .final-cta-description {
+    font-size: 15px;
+  }
+}

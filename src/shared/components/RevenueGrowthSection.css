@@ -1,0 +1,317 @@
+/* ==================== REVENUE GROWTH SECTION ==================== */
+.revenue-growth-section {
+  padding: 100px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+  overflow: hidden;
+}
+
+.revenue-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* ==================== LEFT CONTENT ==================== */
+.revenue-content {
+  padding: 20px;
+}
+
+.revenue-label {
+  display: inline-block;
+  color: #7c3aed;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.revenue-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.revenue-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+.revenue-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.revenue-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.revenue-cta:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.revenue-cta:hover {
+  background: rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
+}
+
+.revenue-cta .cta-arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.revenue-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== RIGHT IMAGE CONTAINER ==================== */
+.revenue-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.revenue-card {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 24px;
+  overflow: visible;
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+/* Room Service Image */
+.room-service-image {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Payment Analytics Overlay */
+.payment-analytics-overlay {
+  position: absolute;
+  bottom: 30px;
+  left: -10%;
+  background: white;
+  border-radius: 16px;
+  padding: 20px 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 260px;
+  animation: slideUp 1s ease-out;
+}
+
+.analytics-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.analytics-chart {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 8px;
+}
+
+.revenue-chart {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 4px rgba(124, 58, 237, 0.2));
+}
+
+.analytics-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analytics-amount {
+  font-size: 28px;
+  font-weight: 900;
+  color: #0a0a1f;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.analytics-growth {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-end;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.growth-percentage {
+  font-size: 14px;
+}
+
+.growth-icon {
+  font-size: 14px;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 968px) {
+  .revenue-container {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .revenue-content {
+    text-align: center;
+  }
+
+  .revenue-description br {
+    display: none;
+  }
+
+  .revenue-cta {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .revenue-growth-section {
+    padding: 60px 20px;
+  }
+
+  .revenue-title {
+    font-size: 2rem;
+  }
+
+  .revenue-description {
+    font-size: 15px;
+  }
+
+  .room-service-image {
+    height: 320px;
+  }
+
+  .payment-analytics-overlay {
+    min-width: 220px;
+    padding: 16px 20px;
+  }
+
+  .analytics-amount {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .revenue-title br {
+    display: none;
+  }
+
+  .revenue-card {
+    max-width: 100%;
+  }
+
+  .room-service-image {
+    height: 280px;
+  }
+
+  .payment-analytics-overlay {
+    min-width: 200px;
+    padding: 14px 18px;
+  }
+
+  .analytics-amount {
+    font-size: 22px;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.revenue-content {
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+.revenue-image-container {
+  animation: fadeInRight 0.8s ease-out;
+}

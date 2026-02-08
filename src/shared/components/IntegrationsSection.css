@@ -1,0 +1,230 @@
+/* ==================== INTEGRATIONS SECTION ==================== */
+.integrations-section {
+  background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+  padding: 100px 20px;
+  overflow: hidden;
+}
+
+.integrations-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ==================== HEADER ==================== */
+.integrations-header {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.integrations-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+  animation: float 3s ease-in-out infinite;
+}
+
+.badge-icon {
+  font-size: 18px;
+}
+
+.integrations-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+}
+
+.integrations-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* ==================== LOGO ROWS ==================== */
+.logos-wrapper {
+  margin-bottom: 60px;
+}
+
+.logo-row {
+  overflow: hidden;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.logo-track {
+  display: flex;
+  gap: 20px;
+  width: fit-content;
+}
+
+/* Scroll Left Animation */
+.scroll-left .logo-track {
+  animation: scrollLeft 30s linear infinite;
+}
+
+/* Scroll Right Animation */
+.scroll-right .logo-track {
+  animation: scrollRight 30s linear infinite;
+}
+
+/* Pause on hover */
+.logo-row:hover .logo-track {
+  animation-play-state: paused;
+}
+
+.logo-card {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-radius: 16px;
+  padding: 32px 48px;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.logo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(124, 58, 237, 0.15);
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* ==================== CTA BUTTON ==================== */
+.integrations-cta-wrapper {
+  text-align: center;
+}
+
+.integrations-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+.integrations-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+}
+
+.arrow {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.integrations-cta:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+@keyframes scrollRight {
+  0% {
+    transform: translateX(-33.333%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 768px) {
+  .integrations-section {
+    padding: 60px 20px;
+  }
+
+  .integrations-header {
+    margin-bottom: 40px;
+  }
+
+  .integrations-title {
+    font-size: 2rem;
+  }
+
+  .integrations-description br {
+    display: none;
+  }
+
+  .logo-card {
+    padding: 24px 36px;
+    min-width: 160px;
+  }
+
+  .logo-text {
+    font-size: 14px;
+  }
+
+  .logos-wrapper {
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .integrations-title br {
+    display: none;
+  }
+
+  .logo-card {
+    padding: 20px 28px;
+    min-width: 140px;
+  }
+
+  .logo-text {
+    font-size: 13px;
+  }
+}

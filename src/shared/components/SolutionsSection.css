@@ -1,0 +1,334 @@
+/* ==================== SOLUTIONS SECTION ==================== */
+.solutions-section {
+  padding: 100px 20px 50px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+}
+
+/* ==================== HEADER PART ==================== */
+.solutions-header {
+  text-align: center;
+  margin-bottom: 80px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.solutions-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+  animation: float 3s ease-in-out infinite;
+}
+
+.badge-icon {
+  font-size: 18px;
+}
+
+.solutions-main-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+}
+
+.solutions-main-description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* ==================== STICKY SLIDES CONTAINER ==================== */
+/* This creates the scroll container for sticky slides */
+.sticky-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Each slide uses position: sticky to create the stacking effect */
+.sticky-slide {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Add margin to create scroll space between slides */
+.sticky-slide:not(:last-child) {
+  margin-bottom: 0vh;
+}
+
+.slide-content {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-radius: 24px;
+  padding: 60px;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* ==================== LEFT CONTENT ==================== */
+.slide-text {
+  padding-right: 20px;
+}
+
+.slide-title {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 900;
+  color: #0a0a1f;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+.slide-description {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  white-space: pre-line;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.check-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ==================== RIGHT PREVIEW ==================== */
+.slide-preview {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.solution-image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  object-fit: cover;
+  display: block;
+}
+
+
+
+/* Bookings Preview - Two Windows */
+
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 1200px) {
+  .slide-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px;
+  }
+
+  .slide-text {
+    padding-right: 0;
+  }
+
+
+}
+
+@media (max-width: 968px) {
+  .solutions-section {
+    padding: 60px 20px 30px;
+  }
+
+  .solutions-header {
+    margin-bottom: 60px;
+  }
+
+  .solutions-main-title {
+    font-size: 2.25rem;
+  }
+
+  .solutions-main-description br {
+    display: none;
+  }
+
+  /* Disable sticky positioning on tablets */
+  .sticky-slide {
+    position: relative;
+    height: auto;
+    min-height: auto;
+    padding: 10px;
+    margin-bottom: 30px !important;
+  }
+
+  .slide-content {
+    padding: 35px 28px;
+  }
+
+  .slide-title {
+    font-size: 1.875rem;
+  }
+
+
+}
+
+@media (max-width: 768px) {
+  .solutions-section {
+    padding: 50px 16px 20px;
+  }
+
+  .solutions-header {
+    margin-bottom: 40px;
+  }
+
+  .solutions-main-title {
+    font-size: 2rem;
+  }
+
+  .solutions-badge {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  /* Completely disable sticky on mobile */
+  .sticky-slide {
+    position: static;
+    height: auto;
+    min-height: auto;
+    padding: 8px;
+    margin-bottom: 24px !important;
+  }
+
+  .sticky-slide:not(:last-child) {
+    margin-bottom: 24px !important;
+  }
+
+  .slide-content {
+    padding: 30px 24px;
+    gap: 30px;
+  }
+
+  .slide-title {
+    font-size: 1.75rem;
+  }
+
+  .slide-description {
+    font-size: 14px;
+  }
+
+  .features-list {
+    gap: 12px;
+  }
+
+  .feature-item {
+    font-size: 14px;
+  }
+
+
+}
+
+@media (max-width: 480px) {
+  .solutions-section {
+    padding: 40px 12px 16px;
+  }
+
+  .solutions-main-title br {
+    display: none;
+  }
+
+  .solutions-main-title {
+    font-size: 1.75rem;
+  }
+
+  .solutions-badge {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .sticky-slide {
+    padding: 6px;
+    margin-bottom: 20px !important;
+  }
+
+  .slide-content {
+    padding: 24px 20px;
+    gap: 24px;
+    border-radius: 16px;
+  }
+
+  .slide-title {
+    font-size: 1.5rem;
+  }
+
+  .slide-description {
+    font-size: 13px;
+  }
+
+  .features-list {
+    gap: 10px;
+  }
+
+  .feature-item {
+    font-size: 13px;
+  }
+
+
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
