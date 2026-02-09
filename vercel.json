@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/demo/:path*",
+      "destination": "https://alrajihy.com/demo/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

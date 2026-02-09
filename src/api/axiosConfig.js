@@ -4,7 +4,7 @@ import axios from 'axios';
 // In development, requests will be proxied through Vite (see vite.config.js)
 // In production, you should set this to the full API URL
 // const BASE_URL = 'https://alrajihy.com' ;
-const BASE_URL = import.meta.env.PROD ? 'https://alrajihy.com' : '';
+const BASE_URL = '';
 
 // Create axios instance
 const axiosInstance = axios.create({
