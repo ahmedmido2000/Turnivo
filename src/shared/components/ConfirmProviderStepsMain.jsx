@@ -9,6 +9,43 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import { joinTeam } from '../../api/cleanerApi';
 import { useCities } from '../../hooks/useSite';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix Leaflet marker icon issue in Vite
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+// Component to handle map clicks and initialization
+const LocationPicker = ({ lat, lang, onLocationSelect }) => {
+  const map = useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  // Fix map size on mount
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }, [map]);
+
+  if (lat && lang) {
+    const position = [parseFloat(lat), parseFloat(lang)];
+    return <Marker position={position} />;
+  }
+  return null;
+};
 
 const ConfirmProviderStepsMain = ({ onMobileMenuClick }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -324,6 +361,59 @@ const handleNextStep = (e) => {
       setCurrentStep(4); // Go directly to step 4 without validation
     }
   };
+  
+  // Handle location selection from map
+  const handleLocationSelect = async (lat, lang) => {
+    // Update coordinates immediately
+    setFormData(prev => ({
+      ...prev,
+      lat: lat.toString(),
+      lang: lang.toString()
+    }));
+
+    // Fetch address from coordinates
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lang}&accept-language=en`,
+        {
+          headers: {
+            'User-Agent': 'Turnivo Property Management App'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        console.error('Failed to fetch address:', response.status);
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.address) {
+        const addressParts = [];
+        const { city, town, village, suburb, road, neighbourhood, state, country } = data.address;
+        
+        // Build address in the format: City, Country, Street
+        const cityName = city || town || village || suburb;
+        if (cityName) addressParts.push(cityName);
+        if (country) addressParts.push(country);
+        if (road || neighbourhood) addressParts.push(road || neighbourhood);
+        
+        const formattedAddress = addressParts.join(', ');
+        
+        // Update form data with address and region only (postcode is user input)
+        setFormData(prev => ({
+          ...prev,
+          address: formattedAddress || prev.address,
+          region: state || prev.region
+        }));
+        
+        console.log('Address updated:', formattedAddress);
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+    }
+  };
 
   return (
     <section>
@@ -494,7 +584,7 @@ const handleNextStep = (e) => {
               {/* Title and Description */}
               <div className="">
                 <h2 className="mb-2 login-title">What is your address?</h2>
-                <p className="login-description">Welcome back! Please log in to continue</p>
+                <p className="login-description">Fill in your address details or click on the map to select your location</p>
               </div>
               
               {/* Login Form */}
@@ -574,16 +664,32 @@ const handleNextStep = (e) => {
 
                     {/* Left side - Map */}
           <div className="col-lg-5 mt-3 p-3 d-none d-lg-block">
-            <div className="h-100 d-flex align-items-center justify-content-center rounded-3 overflow-hidden">
-              <iframe
-                title="Google Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.0185489933747!2d-74.00601408459395!3d40.7127753793304!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a316bb5a6b3%3A0x4e3c5f5b5b5b5b5b!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sus!4v1629795277341!5m2!1sen!2sus"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-              ></iframe>
+            <div className="h-100 d-flex flex-column align-items-center justify-content-center rounded-3 overflow-hidden">
+              <div className="w-100 h-100" style={{ minHeight: '400px' }}>
+                <MapContainer 
+                  key={`provider-map-${currentStep}`}
+                  center={formData.lat && formData.lang ? [parseFloat(formData.lat), parseFloat(formData.lang)] : [52.3676, 4.9041]} 
+                  zoom={13} 
+                  style={{ height: '100%', width: '100%', borderRadius: '8px' }}
+                  scrollWheelZoom={true}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  <LocationPicker 
+                    lat={formData.lat} 
+                    lang={formData.lang} 
+                    onLocationSelect={handleLocationSelect} 
+                  />
+                </MapContainer>
+              </div>
+              {formData.lat && formData.lang && (
+                <div className="mt-2 small text-success d-flex align-items-center gap-1 bg-white px-3 py-2 rounded-2 shadow-sm">
+                  <i className="bi bi-geo-alt-fill"></i>
+                  <span>Location: {parseFloat(formData.lat).toFixed(4)}, {parseFloat(formData.lang).toFixed(4)}</span>
+                </div>
+              )}
             </div>
           </div>
                     </div>
