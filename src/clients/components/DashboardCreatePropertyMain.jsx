@@ -6,6 +6,43 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import { getListsData, createProperty } from '../../api/propertyApi';
 import ClientHeader from './ClientHeader';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix Leaflet marker icon issue in Vite
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+// Component to handle map clicks and initialization
+const LocationPicker = ({ lat, lang, onLocationSelect }) => {
+  const map = useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  // Fix map size on mount
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }, [map]);
+
+  if (lat && lang) {
+    const position = [parseFloat(lat), parseFloat(lang)];
+    return <Marker position={position} />;
+  }
+  return null;
+};
 
 const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
   // Add state to track current step
@@ -130,9 +167,7 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
       setFormData(prev => ({
         ...prev,
         co_host_name: '',
-        co_host_mobile: '',
-        platform_id: '',
-        platform_link: ''
+        co_host_mobile: ''
       }));
     }
   };
@@ -141,6 +176,61 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle location selection from map
+  const handleLocationSelect = async (lat, lang) => {
+    // Update coordinates immediately
+    setFormData(prev => ({
+      ...prev,
+      lat: lat.toString(),
+      lang: lang.toString()
+    }));
+
+    // Fetch address from coordinates
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lang}&accept-language=en`,
+        {
+          headers: {
+            'User-Agent': 'Turnivo Property Management App'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        console.error('Failed to fetch address:', response.status);
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.address) {
+        const addressParts = [];
+        const { city, town, village, suburb, road, neighbourhood, state, country } = data.address;
+        
+        // Build address in the format: City, Country, Street
+        const cityName = city || town || village || suburb;
+        if (cityName) addressParts.push(cityName);
+        if (country) addressParts.push(country);
+        if (road || neighbourhood) addressParts.push(road || neighbourhood);
+        
+        const formattedAddress = addressParts.join(', ');
+        
+        if (formattedAddress) {
+          setFormData(prev => ({
+            ...prev,
+            address: formattedAddress
+          }));
+          
+          // Show success message
+          console.log('Address updated:', formattedAddress);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      // You can show a user-friendly error here if needed
+    }
   };
 
   // Validate form data
@@ -167,9 +257,11 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
     if (isCoHostChecked) {
       if (!formData.co_host_name.trim()) errors.push('Co-host name is required');
       if (!formData.co_host_mobile.trim()) errors.push('Co-host mobile is required');
-      if (!formData.platform_id) errors.push('Platform is required');
-      if (!formData.platform_link.trim()) errors.push('Platform link is required');
     }
+
+    // Platform validation (always required)
+    if (!formData.platform_id) errors.push('Platform is required');
+    if (!formData.platform_link.trim()) errors.push('Platform link is required');
 
     return errors;
   };
@@ -207,14 +299,14 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
       Object.keys(formData).forEach(key => {
         if (formData[key] !== null && formData[key] !== '') {
           // Only add co-host fields if checkbox is checked
-          if (key.startsWith('co_host_') || key.startsWith('platform_')) {
+          if (key.startsWith('co_host_')) {
             if (isCoHostChecked) {
               // Convert to integer if it's a numeric field
               const value = integerFields.includes(key) ? parseInt(formData[key], 10) : formData[key];
               submitData.append(key, value);
             }
           } else {
-            // Convert to integer if it's a numeric field
+            // Convert to integer if it's a numeric field (includes platform_ fields)
             const value = integerFields.includes(key) ? parseInt(formData[key], 10) : formData[key];
             submitData.append(key, value);
           }
@@ -535,21 +627,33 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
                   />
                 </div>
               </div>
-              <h6 className="property-management-card-title mb-1">Address on map</h6>
+              <h6 className="property-management-card-title mb-1">Address on map (Click to select location)</h6>
               <div className="property-map-container mb-2">
-                <div className="property-map">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3622.5049177533113!2d46.72160581500448!3d24.71355228411637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2f0385d3e9c9c9%3A0x9c9c9c9c9c9c9c9c!2sRiyadh%2C%20Saudi%20Arabia!5e0!3m2!1sen!2sus!4v1234567890"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, borderRadius: '8px' }}
-                    allowFullScreen=""
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Property Location Map"
-                    className="map-iframe"
-                  ></iframe>
+                <div className="property-map" style={{ height: '300px', zIndex: 1 }}>
+                  <MapContainer 
+                    key={`map-${currentStep}`}
+                    center={formData.lat && formData.lang ? [parseFloat(formData.lat), parseFloat(formData.lang)] : [24.7136, 46.6753]} 
+                    zoom={13} 
+                    style={{ height: '100%', width: '100%', borderRadius: '8px' }}
+                    scrollWheelZoom={true}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <LocationPicker 
+                      lat={formData.lat} 
+                      lang={formData.lang} 
+                      onLocationSelect={handleLocationSelect} 
+                    />
+                  </MapContainer>
                 </div>
+                {formData.lat && formData.lang && (
+                  <div className="mt-2 small text-success d-flex align-items-center gap-1">
+                    <i className="bi bi-geo-alt-fill"></i>
+                    <span>Location: {parseFloat(formData.lat).toFixed(4)}, {parseFloat(formData.lang).toFixed(4)}</span>
+                  </div>
+                )}
               </div>
               <div className="d-flex justify-content-end align-items-center mb-3 gap-2">
                 <button className="prev-btn rounded-2 px-4 py-2" onClick={handlePrevStep}>
@@ -680,52 +784,53 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4">
-                    <div className="mb-3 w-100">
-                      <label htmlFor="platform_id" className="form-label mb-1">
-                        Platforms list
-                      </label>
-
-                      <div className="position-relative">
-                        <select
-                          id="platform_id"
-                          name="platform_id"
-                          className="form-select custom-select-bs py-2"
-                          value={formData.platform_id}
-                          onChange={handleInputChange}
-                          required
-                          disabled={isLoadingLists}
-                        >
-                          <option value="">
-                            {isLoadingLists ? 'Loading...' : 'Select platform'}
-                          </option>
-                          {listsData.platforms.map(platform => (
-                            <option key={platform.id} value={platform.id}>{platform.name}</option>
-                          ))}
-                        </select>
-
-                        {/* Bootstrap Icon */}
-                        <i className="bi bi-chevron-down select-bs-icon"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-8">
-                    <div className="mb-3 w-100">
-                      <label htmlFor="platform_link" className="form-label mb-1 text-white">.</label>
-                      <input
-                        type="text"
-                        className="form-control rounded-2 py-2 px-3 w-100"
-                        id="platform_link"
-                        name="platform_link"
-                        placeholder="Enter link"
-                        value={formData.platform_link}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                  </div>
                 </>
               )}
+
+              <div className="col-md-4">
+                <div className="mb-3 w-100">
+                  <label htmlFor="platform_id" className="form-label mb-1">
+                    Platforms list
+                  </label>
+
+                  <div className="position-relative">
+                    <select
+                      id="platform_id"
+                      name="platform_id"
+                      className="form-select custom-select-bs py-2"
+                      value={formData.platform_id}
+                      onChange={handleInputChange}
+                      required
+                      disabled={isLoadingLists}
+                    >
+                      <option value="">
+                        {isLoadingLists ? 'Loading...' : 'Select platform'}
+                      </option>
+                      {listsData.platforms.map(platform => (
+                        <option key={platform.id} value={platform.id}>{platform.name}</option>
+                      ))}
+                    </select>
+
+                    {/* Bootstrap Icon */}
+                    <i className="bi bi-chevron-down select-bs-icon"></i>
+                  </div>
+                </div>
+              </div>
+              <div className="col-md-8">
+                <div className="mb-3 w-100">
+                  <label htmlFor="platform_link" className="form-label mb-1 text-white">.</label>
+                  <input
+                    type="text"
+                    className="form-control rounded-2 py-2 px-3 w-100"
+                    id="platform_link"
+                    name="platform_link"
+                    placeholder="Enter link"
+                    value={formData.platform_link}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              </div>
               
               <div className="d-flex justify-content-end align-items-center mb-3 gap-2">
                 <button className="prev-btn rounded-2 px-4 py-2" onClick={handlePrevStep}>
