@@ -371,6 +371,7 @@ const handleNextStep = (e) => {
       lang: lang.toString()
     }));
 
+    
     // Fetch address from coordinates
     try {
       const response = await fetch(

@@ -163,7 +163,7 @@ const CleanerProblemDetailsMain = ({ onMobileMenuClick }) => {
                     <div className="d-flex align-items-center gap-2">
                       <span className="fw-semibold">Problem Type:</span>
                       <div className="problem-type-badge d-flex align-items-center gap-2 p-2 rounded-2">
-                        <img src="/assets/warning.svg" alt="type" />
+                        <img style={{width:"30px"}} src="/assets/warning.svg" alt="type" />
                         <span>{getProblemType(problemDetails.type)}</span>
                       </div>
                     </div>

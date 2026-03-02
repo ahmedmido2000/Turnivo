@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -7,17 +7,44 @@ import {
   Legend,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { getHomeDashboardData } from '../../api/generalSiteApi';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const DashboardChart1 = () => {
-  const data = [
-    { label: 'Finished', value: 13, color: '#292760' },
-    { label: 'Canceled', value: 13, color: '#4F617D' },
-    { label: 'In progress', value: 13, color: '#F59331' },
-  ];
+  const [data, setData] = useState([
+    { label: 'Complete', value: 0, color: '#292760' },
+    { label: 'New', value: 0, color: '#4F617D' },
+    { label: 'In progress', value: 0, color: '#F59331' },
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const response = await getHomeDashboardData(token);
+        if (response.status === 1 && response.data && response.data[0]) {
+          const stats = response.data[0];
+          setData([
+            { label: 'Complete', value: parseInt(stats.CompleteOrder) || 0, color: '#292760' },
+            { label: 'New', value: parseInt(stats.NewOrder) || 0, color: '#4F617D' },
+            { label: 'In progress', value: parseInt(stats.InprogressOrder) || 0, color: '#F59331' },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching functionality chart data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  if (isLoading) return <div className="text-center py-5">Loading...</div>;
 
  const chartData = {
   labels: data.map(item => item.label),
@@ -55,6 +82,9 @@ const options = {
       borderWidth: 1,
       padding: 10,
       displayColors: true,
+      zIndex: 9999,
+      position: 'nearest',
+      external: null, // Ensure we use native tooltip but with higher z-index if possible
       callbacks: {
         label: function(context) {
           const label = context.label || '';
@@ -82,7 +112,7 @@ const options = {
 
       <div className="func-body">
         {/* Chart */}
-        <div className="donut-wrapper" style={{ position: 'relative', width: '200px', height: '200px' }}>
+        <div className="donut-wrapper" style={{ position: 'relative', width: '200px', height: '200px', zIndex: 1 }}>
           <Doughnut data={chartData} options={options} />
           {/* Center Text */}
           <div className='shadow rounded-circle d-flex align-items-center justify-content-center flex-column'
@@ -96,6 +126,7 @@ const options = {
               width: '110px',
               backgroundColor: 'white',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              zIndex: -1, // Ensure center circle stays behind the chart and its tooltips
             }}
           >
             <div className="center-number m-0" style={{ fontSize: '28px', fontWeight: 'bold' }}>{total}</div>

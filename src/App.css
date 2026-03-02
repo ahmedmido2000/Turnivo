@@ -98,6 +98,10 @@
   --font-weight-bold: 700;
   --font-weight-black: 900;
   
+  /* Image Cropper Styles */
+  --cropper-zoom-height: 4px;
+  --cropper-thumb-size: 15px;
+  
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -133,7 +137,39 @@
   --card-image-size: 140px;
 }
 
-/* ==================== BASE STYLES ==================== */
+/* ==================== IMAGE CROPPER ==================== */
+.zoom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #555;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.zoom-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+
 body {
   font-family: var(--font-family-primary) !important;
 }
@@ -1513,13 +1549,42 @@ footer {
 }
 .image-upload-box {
   width: 100%;
-  height: 130px;
   border: 1px dashed #292760;
   border-radius: 8px;
   cursor: pointer;
   background-color: #F6F6F6;
   transition: all 0.2s ease;
 }
+
+/* Zoom Range Styling */
+.zoom-range {
+  -webkit-appearance: none;
+  width: 150px;
+  height: var(--cropper-zoom-height);
+  background: #29276020;
+  outline: none;
+  border-radius: 10px;
+  margin: 0 10px;
+}
+
+.zoom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--cropper-thumb-size);
+  height: var(--cropper-thumb-size);
+  background: #292760;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.zoom-range::-moz-range-thumb {
+  width: var(--cropper-thumb-size);
+  height: var(--cropper-thumb-size);
+  background: #292760;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
 
 .image-upload-box:hover {
   background-color: #f3f4ff;

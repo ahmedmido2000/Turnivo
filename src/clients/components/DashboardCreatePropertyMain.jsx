@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
@@ -9,6 +9,8 @@ import ClientHeader from './ClientHeader';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import Cropper from 'react-easy-crop';
+import { AsyncPaginate } from 'react-select-async-paginate';
 
 // Fix Leaflet marker icon issue in Vite
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -122,15 +124,77 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
 
   const [image, setImage] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
   const inputRef = useRef(null);
+
+  const onCropComplete = useCallback((_croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createImage = (url) =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.addEventListener('load', () => resolve(image));
+      image.addEventListener('error', (error) => reject(error));
+      image.setAttribute('crossOrigin', 'anonymous');
+      image.src = url;
+    });
+
+  const getCroppedImg = async (imageSrc, pixelCrop) => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height
+    );
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, 'image/jpeg');
+    });
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setFileName(file.name);
-    setImage(URL.createObjectURL(file));
-    setFormData(prev => ({ ...prev, image: file }));
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      setImage(reader.result);
+      setShowCropper(true);
+    });
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropSave = async () => {
+    try {
+      const croppedImageBlob = await getCroppedImg(image, croppedAreaPixels);
+      const croppedImageUrl = URL.createObjectURL(croppedImageBlob);
+      setImage(croppedImageUrl);
+      setShowCropper(false);
+      
+      // Create a new File object from the blob to store in formData
+      const croppedFile = new File([croppedImageBlob], fileName, { type: 'image/jpeg' });
+      setFormData(prev => ({ ...prev, image: croppedFile }));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleRemove = () => {
@@ -138,6 +202,7 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
     setFileName('');
     inputRef.current.value = '';
     setFormData(prev => ({ ...prev, image: null }));
+    setShowCropper(false);
   };
 
   // Function to handle next step
@@ -176,6 +241,50 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Load options for address search
+  const loadAddressOptions = async (search, loadedOptions) => {
+    if (!search || search.length < 3) return { options: [], hasMore: false };
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(search)}&limit=10&accept-language=en`,
+        {
+          headers: { 'User-Agent': 'Turnivo Property Management App' }
+        }
+      );
+      const data = await response.json();
+
+      const options = data.map((item) => ({
+        label: item.display_name,
+        value: {
+          lat: item.lat,
+          lon: item.lon,
+          display_name: item.display_name,
+        }
+      }));
+
+      return {
+        options,
+        hasMore: false,
+      };
+    } catch (error) {
+      console.error('Error fetching address options:', error);
+      return { options: [], hasMore: false };
+    }
+  };
+
+  const handleAddressSelect = (option) => {
+    if (!option) return;
+    const { lat, lon, display_name } = option.value;
+    
+    setFormData(prev => ({
+      ...prev,
+      address: display_name,
+      lat: lat.toString(),
+      lang: lon.toString()
+    }));
   };
 
   // Handle location selection from map
@@ -574,15 +683,34 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
             <div className="row mt-3 w-100 g-0 g-lg-2">
               <div className="col-12">
                 <div className="mb-3 w-100">
-                  <label htmlFor="address" className="form-label mb-1">Address of Property</label>
+                  <label htmlFor="address" className="form-label mb-1">Search or Enter Address of Property</label>
+                  <AsyncPaginate
+                    value={formData.address ? { label: formData.address, value: formData.address } : null}
+                    loadOptions={loadAddressOptions}
+                    onChange={handleAddressSelect}
+                    placeholder="Search for address (e.g., Al Nakheel Street, Riyadh)"
+                    isClearable
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        borderRadius: '8px',
+                        borderColor: '#dee2e6',
+                        minHeight: '42px',
+                        boxShadow: 'none',
+                        '&:hover': {
+                          borderColor: '#292760'
+                        }
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999
+                      })
+                    }}
+                  />
                   <input
-                    type="text"
-                    className="form-control rounded-2 py-2 px-3 w-100"
-                    id="address"
+                    type="hidden"
                     name="address"
-                    placeholder="Riyadh, Saudi Arabia, Al Nakheel Street"
                     value={formData.address}
-                    onChange={handleInputChange}
                     required
                   />
                 </div>
@@ -674,10 +802,23 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
                 {/* Upload Box */}
                 <div
                   className="image-upload-box d-flex align-items-center justify-content-start p-2"
-                  onClick={() => inputRef.current.click()}
+                  onClick={() => !showCropper && inputRef.current.click()}
+                  style={{ position: 'relative', overflow: 'hidden', height: image ? '300px' : '200px' }}
                 >
-                  {image ? (
-                    <img src={image} alt="preview" className="uploaded-image" />
+                  {showCropper ? (
+                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                      <Cropper
+                        image={image}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={16 / 9}
+                        onCropChange={setCrop}
+                        onCropComplete={onCropComplete}
+                        onZoomChange={setZoom}
+                      />
+                    </div>
+                  ) : image ? (
+                    <img src={image} alt="preview" className="uploaded-image w-100 h-100 object-fit-cover" />
                   ) : (
                     <span className="upload-placeholder text-center w-100">
                       Click to upload image
@@ -694,17 +835,41 @@ const DashboardCreatePropertyMain = ({ onMobileMenuClick }) => {
                 />
 
                 {/* Bottom Bar */}
-                {image && (
-                  <div className="image-upload-footer d-flex align-items-center justify-content-between mt-2">
+                {(image || showCropper) && (
+                  <div className="image-upload-footer d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">
                     <div className="d-flex align-items-center gap-2">
-                      <button
-                        type="button"
-                        className="main-btn py-2 px-2 rounded-start-3"
-                        onClick={() => inputRef.current.click()}
-                      >
-                        Change image
-                      </button>
-                      <span className="image-name">{fileName}</span>
+                      {showCropper ? (
+                        <div className="d-flex gap-2 align-items-center">
+                          <button
+                            type="button"
+                            className="sec-btn py-2 px-3 rounded-2"
+                            onClick={handleCropSave}
+                          >
+                            Save Crop
+                          </button>
+                          <input
+                            type="range"
+                            value={zoom}
+                            min={1}
+                            max={3}
+                            step={0.1}
+                            aria-labelledby="Zoom"
+                            onChange={(e) => setZoom(e.target.value)}
+                            className="zoom-range"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            className="main-btn py-2 px-2 rounded-start-3"
+                            onClick={() => inputRef.current.click()}
+                          >
+                            Change image
+                          </button>
+                          <span className="image-name">{fileName}</span>
+                        </>
+                      )}
                     </div>
                     <div className="delete-btn px-1 py-1 m-1 d-flex align-items-center justify-content-center gap-1" onClick={handleRemove}>
                       <img src="/assets/delete.svg" alt="delete" />

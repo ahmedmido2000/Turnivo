@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
@@ -23,6 +24,17 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const beforeInputRef = useRef(null);
   const afterInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  // Cropper state
+  const [showCropper, setShowCropper] = useState(false);
+  const [tempImage, setTempImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [cropTarget, setCropTarget] = useState(null); // 'before' | 'after'
+  const [isCropping, setIsCropping] = useState(false);
   
   // State for countdown timer
   const [remainingSeconds, setRemainingSeconds] = useState(0);
@@ -238,6 +250,126 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
     return ((totalSeconds - remainingSeconds) / totalSeconds) * 100;
   };
 
+  const openCamera = async (target) => {
+    setCameraError(null);
+    setCameraTarget(target);
+    setShowCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch {
+        setCameraError('Cannot access camera. Please allow camera permission or use the gallery.');
+      }
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+    setCameraError(null);
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageUrl = canvas.toDataURL('image/jpeg', 0.95);
+    stopCamera();
+    setTempImage(imageUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropTarget(cameraTarget);
+    setShowCropper(true);
+  };
+
+  // Camera state
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraTarget, setCameraTarget] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+
+  // Crop helpers
+  const getCroppedImg = async (imageSrc, pixelCrop) => {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.addEventListener('load', () => resolve(img));
+      img.addEventListener('error', reject);
+      img.src = imageSrc;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+    return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95));
+  };
+
+  const onCropComplete = useCallback((_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  const handleFileSelect = (e, target) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const imageUrl = URL.createObjectURL(file);
+    setTempImage(imageUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropTarget(target);
+    setShowCropper(true);
+    e.target.value = '';
+  };
+
+  const handleCropSave = async () => {
+    try {
+      setIsCropping(true);
+      const blob = await getCroppedImg(tempImage, croppedAreaPixels);
+      const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const accessToken = localStorage.getItem('access_token');
+      const serviceId = searchParams.get('id');
+
+      let response;
+      if (cropTarget === 'before') {
+        response = await addCleanServiceBeforeImages(accessToken, serviceId, [file]);
+      } else {
+        response = await addCleanServiceAfterImages(accessToken, serviceId, [file]);
+      }
+
+      if (response.status === 1) {
+        const detailsResponse = await getCleanServiceDetails(accessToken, serviceId);
+        if (detailsResponse.status === 1 && detailsResponse.data) {
+          setBeforeImages(detailsResponse.data[0].service_images_befor || []);
+          setAfterImages(detailsResponse.data[0].service_images_after || []);
+        }
+        setShowCropper(false);
+        setTempImage(null);
+        Swal.fire({ icon: 'success', title: 'Uploaded!', text: 'Image uploaded successfully', timer: 1500, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Failed', text: response.message || 'Upload failed' });
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to upload' });
+    } finally {
+      setIsCropping(false);
+    }
+  };
+
+  // eslint-disable-next-line no-unused-vars
   const handleBeforeUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -272,6 +404,7 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleAfterUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -391,6 +524,45 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
     try {
       setIsChangingStatus(true);
       
+      const statusName = serviceDetails?.status?.name?.toLowerCase();
+
+      // Check validation only when finishing the task (Complete order)
+      if (statusName === 'progress' || statusName === 'in-progress' || statusName === 'inprogress') {
+        const allTasksCompleted = tasks.length > 0 && tasks.every(task => task.checked);
+        if (!allTasksCompleted) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Incomplete Tasks',
+            text: 'Please complete all tasks (checklist) before finishing!',
+            confirmButtonText: 'OK'
+          });
+          setIsChangingStatus(false);
+          return;
+        }
+
+        if (beforeImages.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Images Missing',
+            text: 'Please upload at least one image "Before cleaning" before finishing!',
+            confirmButtonText: 'OK'
+          });
+          setIsChangingStatus(false);
+          return;
+        }
+
+        if (afterImages.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Images Missing',
+            text: 'Please upload at least one image "After cleaning" before finishing!',
+            confirmButtonText: 'OK'
+          });
+          setIsChangingStatus(false);
+          return;
+        }
+      }
+
       // Prepare request data
       const requestData = {
         service_id: serviceId,
@@ -398,7 +570,6 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
       };
       
       // If status is complete/finished (Close service), add additional data
-      const statusName = serviceDetails?.status?.name?.toLowerCase();
       if (statusName === 'complete' || statusName === 'finished') {
         // Get completed task IDs
         const completedTaskIds = tasks.filter(task => task.checked).map(task => task.id);
@@ -586,12 +757,14 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
                 {isChangingStatus ? 'Updating...' : getStatusButtonText()}
               </button>
             )}
-            <button
-              className="btn btn-outline-danger rounded-2 px-4 py-2 mt-2"
-              onClick={handleReportProblem}
-            >
-              Report a Problem
-            </button>
+            {serviceDetails?.status?.name?.toLowerCase() !== 'complete' && serviceDetails?.status?.name?.toLowerCase() !== 'finished' && (
+              <button
+                className="btn btn-outline-danger rounded-2 px-4 py-2 mt-2"
+                onClick={handleReportProblem}
+              >
+                Report a Problem
+              </button>
+            )}
           </div>
           <div className="d-flex align-items-center gap-1">
             <img src="/assets/calendar-3.svg" alt="calendar" />
@@ -621,9 +794,13 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
                 <div className='rating-stars-bg p-2 rounded-2'>
                     <h3 className='form-label mb-2'>Before cleaning</h3>
                     <div className="d-flex gap-2 align-items-center flex-wrap">
-                        <div className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" onClick={() => beforeInputRef.current.click()}>
+                        <div className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" onClick={() => beforeInputRef.current.click()} style={{ cursor: 'pointer' }}>
                             <img src="/assets/gallery-add.svg" alt="gallery" />
-                            <h6 className='table-time m-0'>Add room photos</h6>
+                            <h6 className='table-time m-0'>Gallery</h6>
+                        </div>
+                        <div className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" onClick={() => openCamera('before')} style={{ cursor: 'pointer' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <h6 className='table-time m-0'>Camera</h6>
                         </div>
                         {beforeImages.map((img, idx) => (
                           <img 
@@ -636,14 +813,18 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
                           />
                         ))}
                     </div>
-                    <input type="file" multiple accept="image/*" ref={beforeInputRef} onChange={handleBeforeUpload} style={{display: 'none'}} />
+                    <input type="file" accept="image/*" ref={beforeInputRef} onChange={(e) => handleFileSelect(e, 'before')} style={{display: 'none'}} />
                 </div>
                 <div className='rating-stars-bg p-2 rounded-2'>
                     <h3 className='form-label mb-2'>After cleaning</h3>
                     <div className="d-flex gap-2 align-items-center flex-wrap">
-                        <div className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" onClick={() => afterInputRef.current.click()}>
+                        <div className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" onClick={() => afterInputRef.current.click()} style={{ cursor: 'pointer' }}>
                             <img src="/assets/gallery-add.svg" alt="gallery" />
-                            <h6 className='table-time m-0'>Add room photos</h6>
+                            <h6 className='table-time m-0'>Gallery</h6>
+                        </div>
+                        <div className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" onClick={() => openCamera('after')} style={{ cursor: 'pointer' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <h6 className='table-time m-0'>Camera</h6>
                         </div>
                         {afterImages.map((img, idx) => (
                           <img 
@@ -656,7 +837,7 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
                           />
                         ))}
                     </div>
-                    <input type="file" multiple accept="image/*" ref={afterInputRef} onChange={handleAfterUpload} style={{display: 'none'}} />
+                    <input type="file" accept="image/*" ref={afterInputRef} onChange={(e) => handleFileSelect(e, 'after')} style={{display: 'none'}} />
                 </div>
 
             </div>
@@ -866,6 +1047,84 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
                 >
                   {isChangingStatus ? 'Updating...' : 'Confirm'}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Camera Modal */}
+      {showCamera && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 1200 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content bg-dark text-white border-0 overflow-hidden">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title">Take a Photo</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={stopCamera}></button>
+              </div>
+              <div className="modal-body p-0 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '55vh', background: '#000' }}>
+                {cameraError ? (
+                  <p className="text-danger text-center px-3">{cameraError}</p>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    style={{ width: '100%', maxHeight: '55vh', objectFit: 'contain' }}
+                    onLoadedMetadata={(e) => e.target.play()}
+                  />
+                )}
+              </div>
+              <div className="modal-footer border-0 justify-content-center gap-3 p-3">
+                <button className="btn btn-outline-light px-4 py-2" onClick={stopCamera}>Cancel</button>
+                {!cameraError && (
+                  <button
+                    className="sec-btn px-5 py-2 d-flex align-items-center gap-2"
+                    onClick={capturePhoto}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Capture
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cropper Modal */}
+      {showCropper && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1100 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content bg-dark text-white border-0 overflow-hidden" style={{ minHeight: '80vh' }}>
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title">Crop Image (16:9)</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => { setShowCropper(false); setTempImage(null); }}></button>
+              </div>
+              <div className="modal-body p-0 position-relative" style={{ height: '60vh' }}>
+                <Cropper
+                  image={tempImage}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={16 / 9}
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                />
+              </div>
+              <div className="modal-footer border-0 flex-column gap-3 p-3">
+                <div className="w-100 px-3">
+                  <label className="form-label small mb-1">Zoom</label>
+                  <input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-100 zoom-slider" />
+                </div>
+                <div className="d-flex gap-2 w-100">
+                  <button className="btn btn-outline-light flex-grow-1 py-2" onClick={() => { setShowCropper(false); setTempImage(null); }}>Cancel</button>
+                  <button className="sec-btn flex-grow-1 py-2" onClick={handleCropSave} disabled={isCropping}>
+                    {isCropping ? <span className="spinner-border spinner-border-sm me-2"></span> : null}
+                    {isCropping ? 'Uploading...' : 'Save & Upload'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -1,9 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardChart1 from './DashboardChart1';
 import DashboardChart2 from './DashboardChart2';
 import ClientHeader from './ClientHeader';
+import { getNewOrders, getNewMaintenanceOrders } from '../../api/cleaningServiceApi';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardMain = ({ onMobileMenuClick }) => {
+  const [recentActivities, setRecentActivities] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+
+        const [cleaningRes, maintenanceRes] = await Promise.all([
+          getNewOrders(token),
+          getNewMaintenanceOrders(token)
+        ]);
+
+        // Support both data structures: data.items or data[0].items
+        const cleaningItems = cleaningRes?.data?.items || 
+                            (Array.isArray(cleaningRes?.data) ? cleaningRes.data[0]?.items : []) || 
+                            [];
+
+        const maintenanceItems = maintenanceRes?.data?.items || 
+                               (Array.isArray(maintenanceRes?.data) ? maintenanceRes.data[0]?.items : []) || 
+                               [];
+
+        const cleaningOrders = cleaningItems.map(order => ({
+            ...order,
+            type: 'Cleaning',
+            displayTitle: order.property_id?.property_type_id?.name || 'Cleaning Request',
+            propertyName: order.property_id?.name || 'Property',
+            time: order.created_at,
+            id: order.id,
+            icon: order.property_id?.property_type_id?.name?.toLowerCase().includes('villa') 
+                  ? "/assets/dashboard-card-icon-16.svg" 
+                  : "/assets/dashboard-card-icon-15.svg"
+        }));
+
+        const maintenanceOrders = maintenanceItems.map(order => ({
+            ...order,
+            type: 'Maintenance',
+            displayTitle: order.property_id?.property_type_id?.name || 'Maintenance Request',
+            propertyName: order.property_id?.name || 'Property',
+            time: order.created_at,
+            id: order.id,
+            icon: "/assets/dashboard-card-icon-17.svg"
+        }));
+
+        const combined = [...cleaningOrders, ...maintenanceOrders]
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 3);
+
+        setRecentActivities(combined);
+      } catch (error) {
+        console.error("Error fetching recent activities:", error);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
   return (
     <section>
         <ClientHeader title="Dashboard" onMobileMenuClick={onMobileMenuClick} />
@@ -31,7 +91,7 @@ const DashboardMain = ({ onMobileMenuClick }) => {
                         <h5 className='dashboard-home-card-desc dashboard-home-card-desc-2 mb-0'>Next 24 h</h5>
                     </div>
                 </div>
-                <div className="col-lg-3 col-md-6 mt-3">
+                {/* <div className="col-lg-3 col-md-6 mt-3">
                     <div className="shadow p-3 rounded-4 bg-white h-100 d-flex flex-column gap-3 align-tems-start sec-border-3">
                         <div className="d-flex justify-content-between align-items-center">
                             <h5 className="dashboard-home-card-title dashboard-home-card-title-3 mb-0">Open Tasks</h5>
@@ -40,7 +100,7 @@ const DashboardMain = ({ onMobileMenuClick }) => {
                         <h5 className='dashboard-home-card-number dashboard-home-card-number-3 mb-0'>07</h5>
                         <h5 className='dashboard-home-card-desc dashboard-home-card-desc-3 mb-0'>Requires attention</h5>
                     </div>
-                </div>
+                </div> */}
                 <div className="col-lg-3 col-md-6 mt-3">
                     <div className="shadow p-3 rounded-4 bg-white h-100 d-flex flex-column gap-3 align-tems-start sec-border-4">
                         <div className="d-flex justify-content-between align-items-center">
@@ -142,7 +202,7 @@ const DashboardMain = ({ onMobileMenuClick }) => {
                 </div>
             </div>
             <div className="row">
-                <div className="col-md-6 mt-3">
+                {/* <div className="col-md-6 mt-3">
                     <div className="shadow p-3 rounded-4 bg-white h-100 d-flex flex-column gap-3 align-tems-start">
                         <div className="d-flex gap-1 align-items-center">
                             <img src="/assets/dashboard-card-icon-9.svg" alt="icon" />
@@ -195,69 +255,39 @@ const DashboardMain = ({ onMobileMenuClick }) => {
                         </div>
                         <div className="sec-btn rounded-3 py-2 text-center">View All tasks</div>
                     </div>
-                </div>
+                </div> */}
                 <div className="col-md-6 mt-3">
                     <div className="shadow p-3 rounded-4 bg-white h-100 d-flex flex-column gap-4 align-tems-start">
                         <div className="d-flex gap-1 align-items-center">
                             <img src="/assets/dashboard-card-icon-14.svg" alt="icon" />
                             <h5 className="dashboard-home-card-2-title mb-0">Recent Activity</h5>
                         </div>
-                        <div className="d-flex justify-content-between gap-2 align-items-start flex-wrap">
-
-                            <div className='d-flex align-items-center gap-2'>
-                                <img src="/assets/dashboard-card-icon-15.svg" alt="icon" />
-                                <div>
-                                    <div className="d-flex align-items-center gap-1">
-                                        <h6 className="dashboard-home-card-2-desc-1 mb-1">Guest Alice Checked-in at </h6>
-                                        <h6 className="dashboard-home-card-3-desc-2 mb-1">Sunny Villa</h6>
-
+                        {recentActivities.map((activity, index) => (
+                            <div 
+                                key={index} 
+                                className="d-flex justify-content-between gap-2 align-items-start flex-wrap "
+                                onClick={() => navigate(`/client/service-details?id=${activity.id}&type=${activity.type.toLowerCase()}`)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <div className='d-flex align-items-center gap-2'>
+                                    <img src={activity.icon} alt="icon" />
+                                    <div>
+                                        <div className="d-flex align-items-center gap-1">
+                                            <h6 className="dashboard-home-card-2-desc-1 mb-1">{activity.propertyName}</h6>
+                                            <h6 className="dashboard-home-card-3-desc-2 mb-1">{activity.displayTitle}</h6>
+                                        </div>
+                                        <p className="dashboard-home-card-2-desc-3 m-0">
+                                            {activity.time ? new Date(activity.time).toLocaleString('en-GB') : 'Just now'}
+                                        </p>
                                     </div>
-                                        <p className="dashboard-home-card-2-desc-3 m-0">10 min ago</p>
                                 </div>
                             </div>
-                        </div>
-                        <div className="d-flex justify-content-between gap-2 align-items-start flex-wrap">
-
-                            <div className='d-flex align-items-center gap-2'>
-                                <img src="/assets/dashboard-card-icon-16.svg" alt="icon" />
-                                <div>
-                                    <div className="d-flex align-items-center gap-1">
-                                        <h6 className="dashboard-home-card-2-desc-1 mb-1">Cleaner Bob Completed cleaning at </h6>
-                                        <h6 className="dashboard-home-card-3-desc-2 mb-1">Beach House</h6>
-
-                                    </div>
-                                        <p className="dashboard-home-card-2-desc-3 m-0">2 h ago</p>
-                                </div>
+                        ))}
+                        {recentActivities.length === 0 && (
+                            <div className="text-center py-3">
+                                <p className="text-muted">No recent activities</p>
                             </div>
-                        </div>
-                        <div className="d-flex justify-content-between gap-2 align-items-start flex-wrap">
-
-                            <div className='d-flex align-items-center gap-2'>
-                                <img src="/assets/dashboard-card-icon-17.svg" alt="icon" />
-                                <div>
-                                    <div className="d-flex align-items-center gap-1">
-                                        <h6 className="dashboard-home-card-2-desc-1 mb-1">Maintenance C . Fixed tap at </h6>
-                                        <h6 className="dashboard-home-card-3-desc-2 mb-1">City Loft</h6>
-
-                                    </div>
-                                        <p className="dashboard-home-card-2-desc-3 m-0">3 h ago</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="d-flex justify-content-between gap-2 align-items-start flex-wrap">
-
-                            <div className='d-flex align-items-center gap-2'>
-                                <img src="/assets/dashboard-card-icon-18.svg" alt="icon" />
-                                <div>
-                                    <div className="d-flex align-items-center gap-1">
-                                        <h6 className="dashboard-home-card-2-desc-1 mb-1">Guest DavidChecked-out at </h6>
-                                        <h6 className="dashboard-home-card-3-desc-2 mb-1"> Mountain Cabin</h6>
-
-                                    </div>
-                                        <p className="dashboard-home-card-2-desc-3 m-0">5 h ago</p>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

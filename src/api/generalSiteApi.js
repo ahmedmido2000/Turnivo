@@ -14,6 +14,16 @@ export const getServicesData = async () => {
 };
 
 /**
+ * Get home dashboard data (charts and statistics)
+ * @param {string} accessToken - User's access token
+ * @returns {Promise} API response with dashboard data
+ */
+export const getHomeDashboardData = async (accessToken) => {
+  const response = await axiosInstance.get(`/demo/turnivo/api/web/v1/site/home?access-token=${accessToken}`);
+  return response.data;
+};
+
+/**
  * Send contact form data
  * @param {Object} formData - {name, mobile, email, body}
  * @returns {Promise} API response

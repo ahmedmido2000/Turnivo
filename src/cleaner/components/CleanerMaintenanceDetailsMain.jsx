@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
 import { useSelector } from 'react-redux';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -16,13 +17,34 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
   const navigate = useNavigate();
   const [beforeImages, setBeforeImages] = useState([]);
   const [afterImages, setAfterImages] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [newBeforeFiles, setNewBeforeFiles] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [newAfterFiles, setNewAfterFiles] = useState([]);
   const beforeInputRef = useRef(null);
   const afterInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  // Cropper state
+  const [showCropper, setShowCropper] = useState(false);
+  const [tempImage, setTempImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [cropTarget, setCropTarget] = useState(null);
+  const [isCropping, setIsCropping] = useState(false);
+
+  // Camera state
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraTarget, setCameraTarget] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+
   const [serviceDetails, setServiceDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [isUploadingBefore, setIsUploadingBefore] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [isUploadingAfter, setIsUploadingAfter] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -76,138 +98,116 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
     fetchDetails();
   }, [serviceId, accessToken]);
 
-  // Handle selecting before images
-  const handleBeforeSelect = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-    setNewBeforeFiles(prev => [...prev, ...files]);
-  };
-
-  // Handle selecting after images
-  const handleAfterSelect = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-    setNewAfterFiles(prev => [...prev, ...files]);
-  };
-
-  // Upload before images
-  const handleBeforeUpload = async () => {
-    if (newBeforeFiles.length === 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'No Images',
-        text: 'Please select images first',
-      });
-      return;
-    }
-
-    if (!serviceId || !accessToken) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Service ID or access token missing',
-      });
-      return;
-    }
-
+  const openCamera = async (target) => {
+    setCameraError(null);
+    setCameraTarget(target);
+    setShowCamera(true);
     try {
-      setIsUploadingBefore(true);
-      const response = await addMaintenanceServiceBeforeImages(accessToken, serviceId, newBeforeFiles);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch {
+        setCameraError('Cannot access camera. Please allow camera permission or use the gallery.');
+      }
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+    setCameraError(null);
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageUrl = canvas.toDataURL('image/jpeg', 0.95);
+    stopCamera();
+    setTempImage(imageUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropTarget(cameraTarget);
+    setShowCropper(true);
+  };
+
+  // Crop helpers
+  const getCroppedImg = async (imageSrc, pixelCrop) => {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.addEventListener('load', () => resolve(img));
+      img.addEventListener('error', reject);
+      img.src = imageSrc;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+    return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95));
+  };
+
+  const onCropComplete = useCallback((_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  const handleFileSelect = (e, target) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const imageUrl = URL.createObjectURL(file);
+    setTempImage(imageUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropTarget(target);
+    setShowCropper(true);
+    e.target.value = '';
+  };
+
+  const handleCropSave = async () => {
+    try {
+      setIsCropping(true);
+      const blob = await getCroppedImg(tempImage, croppedAreaPixels);
+      const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+      let response;
+      if (cropTarget === 'before') {
+        response = await addMaintenanceServiceBeforeImages(accessToken, serviceId, [file]);
+      } else {
+        response = await addMaintenanceServiceAfterImages(accessToken, serviceId, [file]);
+      }
 
       if (response.status === 1) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: response.message || 'Before images uploaded successfully',
-        });
-        setNewBeforeFiles([]);
-        // Refresh data
         const refreshResponse = await getMaintenanceServiceDetails(accessToken, serviceId);
         if (refreshResponse.status === 1 && refreshResponse.data?.[0]) {
           setBeforeImages(refreshResponse.data[0].service_images_befor || []);
-        }
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: response.message || 'Failed to upload before images',
-        });
-      }
-    } catch (error) {
-      console.error('Error uploading before images:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.message || 'Failed to upload before images',
-      });
-    } finally {
-      setIsUploadingBefore(false);
-    }
-  };
-
-  // Upload after images
-  const handleAfterUpload = async () => {
-    if (newAfterFiles.length === 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'No Images',
-        text: 'Please select images first',
-      });
-      return;
-    }
-
-    if (!serviceId || !accessToken) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Service ID or access token missing',
-      });
-      return;
-    }
-
-    try {
-      setIsUploadingAfter(true);
-      const response = await addMaintenanceServiceAfterImages(accessToken, serviceId, newAfterFiles);
-
-      if (response.status === 1) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: response.message || 'After images uploaded successfully',
-        });
-        setNewAfterFiles([]);
-        // Refresh data
-        const refreshResponse = await getMaintenanceServiceDetails(accessToken, serviceId);
-        if (refreshResponse.status === 1 && refreshResponse.data?.[0]) {
           setAfterImages(refreshResponse.data[0].service_images_after || []);
         }
+        setShowCropper(false);
+        setTempImage(null);
+        Swal.fire({ icon: 'success', title: 'Uploaded!', text: 'Image uploaded successfully', timer: 1500, showConfirmButton: false });
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: response.message || 'Failed to upload after images',
-        });
+        Swal.fire({ icon: 'error', title: 'Failed', text: response.message || 'Upload failed' });
       }
     } catch (error) {
-      console.error('Error uploading after images:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.message || 'Failed to upload after images',
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to upload' });
     } finally {
-      setIsUploadingAfter(false);
+      setIsCropping(false);
     }
-  };
-
-  // Remove selected before file
-  const removeBeforeFile = (index) => {
-    setNewBeforeFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  // Remove selected after file
-  const removeAfterFile = (index) => {
-    setNewAfterFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   // Get status badge class
@@ -330,6 +330,34 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
 
     try {
       setIsSubmitting(true);
+      
+      const statusName = serviceDetails?.status?.name?.toLowerCase();
+      
+      // Validation for finishing maintenance task
+      if (statusName === 'progress' || statusName === 'in-progress' || statusName === 'inprogress') {
+        if (beforeImages.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Images Missing',
+            text: 'Please upload at least one image "Before work" before finishing!',
+            confirmButtonText: 'OK'
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (afterImages.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Images Missing',
+            text: 'Please upload at least one image "After work" before finishing!',
+            confirmButtonText: 'OK'
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const response = await changeStatusMaintenanceService(accessToken, {
         service_id: serviceId,
         comment: submitComment.trim(),
@@ -511,9 +539,16 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                           style={{ cursor: 'pointer' }}
                         >
                           <img src="/assets/gallery-add.svg" alt="gallery" />
-                          <h6 className='table-time m-0'>Add photos</h6>
+                          <h6 className='table-time m-0'>Gallery</h6>
                         </div>
-                        {/* Existing images from API */}
+                        <div 
+                          className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" 
+                          onClick={() => openCamera('before')}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                          <h6 className='table-time m-0'>Camera</h6>
+                        </div>
                         {beforeImages.map((img, idx) => (
                           <img 
                             key={`existing-${idx}`} 
@@ -524,51 +559,14 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                             onClick={() => openImageModal(typeof img === 'string' ? img : img.image)}
                           />
                         ))}
-                        {/* New selected files */}
-                        {newBeforeFiles.map((file, idx) => (
-                          <div key={`new-${idx}`} className="position-relative">
-                            <img 
-                              src={URL.createObjectURL(file)} 
-                              className='added-img' 
-                              alt="new" 
-                            />
-                            <button 
-                              className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0"
-                              style={{ width: '20px', height: '20px', fontSize: '10px' }}
-                              onClick={() => removeBeforeFile(idx)}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
                     </div>
                     <input 
                       type="file" 
-                      multiple 
                       accept="image/*" 
                       ref={beforeInputRef} 
-                      onChange={handleBeforeSelect} 
+                      onChange={(e) => handleFileSelect(e, 'before')} 
                       style={{display: 'none'}} 
                     />
-                    {newBeforeFiles.length > 0 && (
-                      <button 
-                        className="main-btn rounded-2 px-3 py-2 mt-2 d-flex align-items-center gap-2"
-                        onClick={handleBeforeUpload}
-                        disabled={isUploadingBefore}
-                      >
-                        {isUploadingBefore ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm" role="status"></span>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <img src="/assets/upload.svg" alt="upload" style={{ filter: 'brightness(0) invert(1)' }} />
-                            Upload {newBeforeFiles.length} image(s)
-                          </>
-                        )}
-                      </button>
-                    )}
                 </div>
                 <div className='rating-stars-bg p-2 rounded-2'>
                     <h3 className='form-label mb-2'>After cleaning</h3>
@@ -579,9 +577,16 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                           style={{ cursor: 'pointer' }}
                         >
                           <img src="/assets/gallery-add.svg" alt="gallery" />
-                          <h6 className='table-time m-0'>Add photos</h6>
+                          <h6 className='table-time m-0'>Gallery</h6>
                         </div>
-                        {/* Existing images from API */}
+                        <div 
+                          className="add-room-btn d-flex flex-column align-items-center justify-content-center gap-2" 
+                          onClick={() => openCamera('after')}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                          <h6 className='table-time m-0'>Camera</h6>
+                        </div>
                         {afterImages.map((img, idx) => (
                           <img 
                             key={`existing-${idx}`} 
@@ -592,51 +597,14 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                             onClick={() => openImageModal(typeof img === 'string' ? img : img.image)}
                           />
                         ))}
-                        {/* New selected files */}
-                        {newAfterFiles.map((file, idx) => (
-                          <div key={`new-${idx}`} className="position-relative">
-                            <img 
-                              src={URL.createObjectURL(file)} 
-                              className='added-img' 
-                              alt="new" 
-                            />
-                            <button 
-                              className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0"
-                              style={{ width: '20px', height: '20px', fontSize: '10px' }}
-                              onClick={() => removeAfterFile(idx)}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
                     </div>
                     <input 
                       type="file" 
-                      multiple 
                       accept="image/*" 
                       ref={afterInputRef} 
-                      onChange={handleAfterSelect} 
+                      onChange={(e) => handleFileSelect(e, 'after')} 
                       style={{display: 'none'}} 
                     />
-                    {newAfterFiles.length > 0 && (
-                      <button 
-                        className="main-btn rounded-2 px-3 py-2 mt-2 d-flex align-items-center gap-2"
-                        onClick={handleAfterUpload}
-                        disabled={isUploadingAfter}
-                      >
-                        {isUploadingAfter ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm" role="status"></span>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <img src="/assets/upload.svg" alt="upload" style={{ filter: 'brightness(0) invert(1)' }} />
-                            Upload {newAfterFiles.length} image(s)
-                          </>
-                        )}
-                      </button>
-                    )}
                 </div>
 
             </div>
@@ -676,12 +644,14 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                 >
                   Reject order
                 </button>
-                <button 
-                  className="btn btn-outline-warning py-2 px-4 rounded-2"
-                  onClick={handleReportProblem}
-                >
-                  Report a Problem
-                </button>
+                {serviceDetails?.status?.name?.toLowerCase() !== 'complete' && serviceDetails?.status?.name?.toLowerCase() !== 'finished' && (
+                  <button 
+                    className="btn btn-outline-warning py-2 px-4 rounded-2"
+                    onClick={handleReportProblem}
+                  >
+                    Report a Problem
+                  </button>
+                )}
                 </div>
                       <button 
             type="submit" 
@@ -854,8 +824,88 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
           </div>
         </div>
       )}
+
+      {/* Camera Modal */}
+      {showCamera && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 1200 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content bg-dark text-white border-0 overflow-hidden">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title">Take a Photo</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={stopCamera}></button>
+              </div>
+              <div className="modal-body p-0 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '55vh', background: '#000' }}>
+                {cameraError ? (
+                  <p className="text-danger text-center px-3">{cameraError}</p>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    style={{ width: '100%', maxHeight: '55vh', objectFit: 'contain' }}
+                    onLoadedMetadata={(e) => e.target.play()}
+                  />
+                )}
+              </div>
+              <div className="modal-footer border-0 justify-content-center gap-3 p-3">
+                <button className="btn btn-outline-light px-4 py-2" onClick={stopCamera}>Cancel</button>
+                {!cameraError && (
+                  <button
+                    className="sec-btn px-5 py-2 d-flex align-items-center gap-2"
+                    onClick={capturePhoto}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Capture
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cropper Modal */}
+      {showCropper && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1100 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content bg-dark text-white border-0 overflow-hidden" style={{ minHeight: '80vh' }}>
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title">Crop Image (16:9)</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => { setShowCropper(false); setTempImage(null); }}></button>
+              </div>
+              <div className="modal-body p-0 position-relative" style={{ height: '60vh' }}>
+                <Cropper
+                  image={tempImage}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={16 / 9}
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                />
+              </div>
+              <div className="modal-footer border-0 flex-column gap-3 p-3">
+                <div className="w-100 px-3">
+                  <label className="form-label small mb-1">Zoom</label>
+                  <input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-100 zoom-slider" />
+                </div>
+                <div className="d-flex gap-2 w-100">
+                  <button className="btn btn-outline-light flex-grow-1 py-2" onClick={() => { setShowCropper(false); setTempImage(null); }}>Cancel</button>
+                  <button className="sec-btn flex-grow-1 py-2" onClick={handleCropSave} disabled={isCropping}>
+                    {isCropping ? <span className="spinner-border spinner-border-sm me-2"></span> : null}
+                    {isCropping ? 'Uploading...' : 'Save & Upload'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
 
 export default CleanerMaintenanceDetailsMain;
+
+

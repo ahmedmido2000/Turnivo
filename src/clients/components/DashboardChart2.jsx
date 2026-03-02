@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,6 +12,8 @@ import {
 import { Line } from 'react-chartjs-2';
 import MovingOutlinedIcon from '@mui/icons-material/MovingOutlined';
 import TrendingDownOutlinedIcon from '@mui/icons-material/TrendingDownOutlined';
+import { getHomeDashboardData } from '../../api/generalSiteApi';
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -23,15 +25,12 @@ ChartJS.register(
 );
 
 const DashboardChart2 = () => {
-  // Data for the chart based on the image
-  const labels = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'];
-  
-  const data = {
-    labels,
+  const [chartDataState, setChartDataState] = useState({
+    labels: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
     datasets: [
       {
         label: 'In progress',
-        data: [5, 8, 13, 10, 7, 12, 15, 11, 9, 14, 18, 16, 13, 10],
+        data: new Array(14).fill(0),
         borderColor: '#4F617D',
         backgroundColor: '#4F617D',
         tension: 0.3,
@@ -42,7 +41,7 @@ const DashboardChart2 = () => {
       },
       {
         label: 'Canceled',
-        data: [15, 18, 22, 20, 25, 30, 28, 32, 35, 30, 25, 20, 18, 15],
+        data: new Array(14).fill(0),
         borderColor: '#292760',
         backgroundColor: '#292760',
         tension: 0.3,
@@ -53,7 +52,7 @@ const DashboardChart2 = () => {
       },
       {
         label: 'Finished',
-        data: [10, 15, 20, 25, 30, 35, 40, 42, 45, 42, 40, 38, 35, 30],
+        data: new Array(14).fill(0),
         borderColor: '#F59331',
         backgroundColor: '#F59331',
         tension: 0.3,
@@ -63,7 +62,66 @@ const DashboardChart2 = () => {
         borderWidth: 4,
       }
     ],
-  };
+  });
+
+  const [legendData, setLegendData] = useState([
+    { label: 'In progress', color: '#4F617D', value: 0, trend: 'stable' },
+    { label: 'Canceled', color: '#292760', value: 0, trend: 'stable' },
+    { label: 'Finished', color: '#F59331', value: 0, trend: 'stable' }
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const response = await getHomeDashboardData(token);
+        
+        if (response.status === 1 && response.data && response.data[0]) {
+          const apiData = response.data[0];
+          const monthsOrder = ['December', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January'];
+          
+          const inProgressData = [];
+          const canceledData = [];
+          const finishedData = [];
+          const labels = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'];
+
+          monthsOrder.forEach(month => {
+            const mData = apiData[month] || { progress: 0, cancel: 0, complete: 0 };
+            inProgressData.push(parseInt(mData.progress) || 0);
+            canceledData.push(parseInt(mData.cancel) || 0);
+            finishedData.push(parseInt(mData.complete) || 0);
+          });
+
+          setChartDataState(prev => ({
+            ...prev,
+            datasets: [
+              { ...prev.datasets[0], data: inProgressData },
+              { ...prev.datasets[1], data: canceledData },
+              { ...prev.datasets[2], data: finishedData },
+            ]
+          }));
+
+          // Calculate current values and trends (comparing last 2 points if helpful, but for now just showing actuals)
+          setLegendData([
+            { label: 'In progress', color: '#4F617D', value: inProgressData[inProgressData.length - 1], trend: inProgressData[inProgressData.length - 1] >= inProgressData[inProgressData.length - 2] ? 'up' : 'down' },
+            { label: 'Canceled', color: '#292760', value: canceledData[canceledData.length - 1], trend: canceledData[canceledData.length - 1] >= canceledData[canceledData.length - 2] ? 'up' : 'down' },
+            { label: 'Finished', color: '#F59331', value: finishedData[finishedData.length - 1], trend: finishedData[finishedData.length - 1] >= finishedData[finishedData.length - 2] ? 'up' : 'down' }
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching jobs chart data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (isLoading) return <div className="text-center py-5">Loading...</div>;
+
+  const data = chartDataState;
 
 const options = {
   responsive: true,
@@ -106,26 +164,7 @@ const options = {
 
 
   // Custom legend items with values
-  const legendItems = [
-    { 
-      label: 'In progress', 
-      color: '#4F617D',
-      value: 13,
-      trend: 'up' // up, down, or stable
-    },
-    { 
-      label: 'Canceled', 
-      color: '#292760',
-      value: 16,
-      trend: 'down'
-    },
-    { 
-      label: 'Finished', 
-      color: '#F59331',
-      value: 24,
-      trend: 'up'
-    }
-  ];
+  const legendItems = legendData;
 
   return (
     <div>
