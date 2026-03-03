@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getPropertyProblems } from '../../api/cleaningServiceApi';
+import { getPropertyById } from '../../api/propertyApi';
 import Swal from 'sweetalert2';
 import ClientHeader from './ClientHeader';
 
 const DashboardProperyProblemMain = ({ onMobileMenuClick }) => {
   // API state
   const [problems, setProblems] = useState([]);
+  const [propertyDetails, setPropertyDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch property problems
+  // Fetch property problems and their login codes
   useEffect(() => {
     const fetchProblems = async () => {
       setLoading(true);
@@ -27,8 +29,26 @@ const DashboardProperyProblemMain = ({ onMobileMenuClick }) => {
         const response = await getPropertyProblems(accessToken, currentPage);
         
         if (response && response.status === 1 && response.data && response.data[0]) {
-          setProblems(response.data[0].items || []);
+          const items = response.data[0].items || [];
+          setProblems(items);
           setPagination(response.data[0]._meta || null);
+
+          // Fetch property details for each problem to get login_code
+          const propertyIds = [...new Set(items.map(p => p.property_id?.id).filter(Boolean))];
+          const detailsMap = {};
+          
+          await Promise.all(propertyIds.map(async (id) => {
+            try {
+              const res = await getPropertyById(accessToken, id);
+              if (res && res.status === 1 && res.data && res.data[0]) {
+                detailsMap[id] = res.data[0];
+              }
+            } catch (err) {
+              console.error(`Error fetching property ${id}:`, err);
+            }
+          }));
+          
+          setPropertyDetails(detailsMap);
         } else {
           throw new Error('Failed to fetch property problems');
         }
@@ -111,22 +131,27 @@ const DashboardProperyProblemMain = ({ onMobileMenuClick }) => {
                       <div className="d-flex align-items-start flex-column flex-md-row gap-3 w-100">
                         <div className="d-flex flex-column align-items-start gap-2 w-100">
                           <div className="sec-border w-100">
-                            <div className="d-flex w-100 align-items-center gap-2">
-                              <img 
-                                src={problem.property_id?.image || '/assets/property-management-card-img.png'} 
-                                className='property-management-card-img-2' 
-                                alt="Property" 
-                              />
-                              <div className='d-flex flex-column gap-2 align-items-start'>
-                                <div className='villa-badge py-1 px-3 rounded-pill'>
-                                  {problem.property_id?.property_type_id?.name || 'Property'}
+                            <div className="d-flex w-100 align-items-center justify-content-between gap-2">
+                              <div className="d-flex align-items-center gap-2">
+                                <img 
+                                  src={problem.property_id?.image || '/assets/property-management-card-img.png'} 
+                                  className='property-management-card-img-2' 
+                                  alt="Property" 
+                                />
+                                <div className='d-flex flex-column gap-2 align-items-start'>
+                                  <h6 className="property-problem-title mb-0 fw-bold fs-5">
+                                    {problem.property_id?.name || 'Property'}
+                                  </h6>
+                                  <div className="d-flex align-items-center">
+                                    <img src="/assets/location.svg" className='img-fluid' alt="location" />
+                                    <p className="property-management-card-address m-0">
+                                      {problem.property_id?.address || 'N/A'}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="d-flex align-items-center">
-                                  <img src="/assets/location.svg" className='img-fluid' alt="location" />
-                                  <p className="property-management-card-address m-0">
-                                    {problem.property_id?.address || 'N/A'}
-                                  </p>
-                                </div>
+                              </div>
+                              <div className='villa-badge py-1 px-3 rounded-pill'>
+                                {problem.property_id?.property_type_id?.name || 'Property'}
                               </div>
                             </div>
                             <div className="d-flex gap-3 align-items-center justify-content-between flex-wrap w-100 py-1 px-2 rounded-1 mt-2">
@@ -166,12 +191,11 @@ const DashboardProperyProblemMain = ({ onMobileMenuClick }) => {
                               alt="user" 
                             />   
                             <div className='d-flex flex-column gap-2 align-items-start'>
-                              <h6 className="property-problem-title mb-0">
-                                {problem.property_id?.name || 'Property Problem'}
-                              </h6>
                               <div className="d-flex align-items-center gap-1">
-                                <h6 className="property-management-card-title m-0">Problem ID: </h6>
-                                <p className="dashboard-card-link m-0">{problem.id}</p>
+                                <h6 className="property-management-card-title m-0">Login Code: </h6>
+                                <p className="dashboard-card-link m-0 fw-bold" style={{ letterSpacing: '1px' }}>
+                                  {propertyDetails[problem.property_id?.id]?.login_code || 'N/A'}
+                                </p>
                               </div>
                               <div className="d-flex align-items-center gap-1">
                                 <img src="/assets/calendar-3.svg" alt="calendar" />
@@ -191,18 +215,22 @@ const DashboardProperyProblemMain = ({ onMobileMenuClick }) => {
                             {problem.description || 'No description provided'}
                           </p>
                           <div className="d-flex justify-content-end w-100 gap-2" onClick={(e) => e.preventDefault()}>
-                            <Link 
-                              to={`/client/maintenance?property_id=${problem.property_id?.id}`} 
-                              className="main-btn rounded-2 px-3 py-2 w-50-100 text-decoration-none"
-                            >
-                              Request maintenance service
-                            </Link>
-                            <Link 
-                              to={`/client/cleaning-request?property_id=${problem.property_id?.id}`} 
-                              className="sec-btn rounded-2 px-4 py-2 w-50-100 text-decoration-none"
-                            >
-                              Request cleaning service
-                            </Link>
+                            {problem.type === 2 && (
+                              <Link 
+                                to={`/client/maintenance?property_id=${problem.property_id?.id}`} 
+                                className="main-btn rounded-2 px-3 py-2 w-50-100 text-decoration-none"
+                              >
+                                Request maintenance service
+                              </Link>
+                            )}
+                            {problem.type === 1 && (
+                              <Link 
+                                to={`/client/cleaning-request?property_id=${problem.property_id?.id}`} 
+                                className="sec-btn rounded-2 px-4 py-2 w-50-100 text-decoration-none"
+                              >
+                                Request cleaning service
+                              </Link>
+                            )}
                           </div>
                           <div className={`${getStatusBadgeClass(problem.status)} w-100 py-2 text-center`}>
                             {getStatusLabel(problem.status)}

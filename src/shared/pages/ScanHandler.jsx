@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectRoleId, selectAccessToken, selectCurrentUser } from '../../store/authSlice';
 import { getNewCleanServices, getProgressCleanServices, providerCheckIn } from '../../api/cleanerCleaningApi';
+import { decodePropertyId } from '../../utils/qrEncoder';
 
 /**
  * ScanHandler Component
@@ -15,7 +16,8 @@ import { getNewCleanServices, getProgressCleanServices, providerCheckIn } from '
  */
 
 const ScanHandler = () => {
-  const { propertyId } = useParams();
+  const { token } = useParams();
+  const propertyId = decodePropertyId(token);
   const navigate = useNavigate();
   const roleId = useSelector(selectRoleId);
   const accessToken = useSelector(selectAccessToken);
@@ -72,6 +74,16 @@ const ScanHandler = () => {
 
   useEffect(() => {
     const handleRedirect = async () => {
+      // Validate decoded property ID
+      if (!propertyId) {
+        setStatusMessage('Invalid QR Code');
+        setStatusSubtitle('This QR code is not valid or has been tampered with.');
+        setStatusType('error');
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        navigate('/');
+        return;
+      }
+
       // If user is authenticated
       if (roleId) {
         switch (roleId) {
@@ -170,8 +182,10 @@ const ScanHandler = () => {
             navigate(`/guest/login?propertyId=${propertyId}`);
         }
       } else {
-        // If user is not authenticated, redirect to guest login
-        navigate(`/guest/login?propertyId=${propertyId}`);
+        // If user is not authenticated, show login as guest option
+        setStatusMessage('Welcome!');
+        setStatusSubtitle('You are not logged in. You can continue as a guest to access this property.');
+        setStatusType('guest');
       }
     };
 
@@ -220,6 +234,14 @@ const ScanHandler = () => {
               </svg>
             </div>
           )}
+          {statusType === 'guest' && (
+            <div className="d-inline-block p-4 rounded-4 bg-white shadow-lg">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="8" r="4" stroke="#f7941d" strokeWidth="2" fill="none"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#f7941d" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              </svg>
+            </div>
+          )}
         </div>
 
         {/* Main Content */}
@@ -229,6 +251,19 @@ const ScanHandler = () => {
           </h2>
           <p className="dashboard-routes-sub text-muted">{statusSubtitle}</p>
         </div>
+
+        {/* Guest Login Button */}
+        {statusType === 'guest' && (
+          <div className="d-flex flex-column align-items-center gap-3 mt-2">
+            <button
+              className="btn btn-lg fw-bold px-5 py-3 rounded-3"
+              style={{ backgroundColor: '#f7941d', color: '#fff', fontSize: '1.1rem' }}
+              onClick={() => navigate(`/guest/login?propertyId=${propertyId}`)}
+            >
+              Login as Guest
+            </button>
+          </div>
+        )}
 
         {/* Loading Spinner - Only show for loading state */}
         {statusType === 'loading' && (
@@ -249,7 +284,7 @@ const ScanHandler = () => {
         )}
 
         {/* Status Badge - Show for success/error */}
-        {statusType !== 'loading' && (
+        {(statusType === 'success' || statusType === 'error') && (
           <div className={`mt-4 p-3 rounded-3 ${statusType === 'success' ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'}`}>
             <p className={`m-0 fw-bold ${statusType === 'success' ? 'text-success' : 'text-danger'}`}>
               {statusType === 'success' ? '✓ Redirecting...' : '✗ Redirecting...'}

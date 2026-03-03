@@ -21,6 +21,8 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    const lang = localStorage.getItem('josur_language') || 'en';
+    config.headers['Accept-Language'] = lang;
     return config;
   },
   (error) => {

@@ -6,9 +6,18 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import { useCleanerData } from '../context/CleanerDataContext';
 
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'ar', label: 'العربية' },
+  { code: 'nl', label: 'Nederlands' },
+];
+
 const CleanerHeader = ({ title, onMobileMenuClick }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState(() => localStorage.getItem('josur_language') || 'en');
   const dropdownRef = useRef(null);
+  const langDropdownRef = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
@@ -20,11 +29,14 @@ const CleanerHeader = ({ title, onMobileMenuClick }) => {
     cartCount 
   } = useCleanerData();
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
+      }
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+        setIsLangDropdownOpen(false);
       }
     };
 
@@ -33,6 +45,13 @@ const CleanerHeader = ({ title, onMobileMenuClick }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleLangChange = (code) => {
+    localStorage.setItem('josur_language', code);
+    setCurrentLang(code);
+    setIsLangDropdownOpen(false);
+    window.location.reload();
+  };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -62,9 +81,29 @@ const CleanerHeader = ({ title, onMobileMenuClick }) => {
           <h2 className="mb-0 dashboard-title">{title}</h2>
         </div>
         <div className="d-flex justify-content-end gap-2 align-items-center">
-          <div className="dashboard-lang-btn d-flex gap-1 align-items-center">
-            <img src="/assets/global.svg" alt="language" />
-            <span>English</span>
+          <div className="user-dropdown-container" ref={langDropdownRef} style={{ position: 'relative' }}>
+            <div
+              className="dashboard-lang-btn d-flex gap-1 align-items-center"
+              onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+              style={{ cursor: 'pointer' }}
+            >
+              <img src="/assets/global.svg" alt="language" />
+              <span>{LANGUAGES.find(l => l.code === currentLang)?.label || 'English'}</span>
+              <FontAwesomeIcon icon={faChevronDown} className={`dropdown-chevron ${isLangDropdownOpen ? 'open' : ''}`} style={{ fontSize: '10px' }} />
+            </div>
+            {isLangDropdownOpen && (
+              <div className="user-dropdown-menu">
+                {LANGUAGES.map((lang) => (
+                  <div
+                    key={lang.code}
+                    className={`dropdown-item d-flex gap-2 align-items-center ${currentLang === lang.code ? 'fw-bold' : ''}`}
+                    onClick={() => handleLangChange(lang.code)}
+                  >
+                    <span>{lang.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <Link to='/cleaner/shopping-cart' className="notification-icon-container">
             <img src="/assets/shopping-cart.svg" alt="cart" />

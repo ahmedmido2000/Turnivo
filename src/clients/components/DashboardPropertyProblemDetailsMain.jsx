@@ -309,18 +309,22 @@ const DashboardPropertyProblemDetailsMain = ({ onMobileMenuClick }) => {
                     
                     {/* Action Buttons */}
                     <div className="d-flex justify-content-end w-100 gap-2 mt-3">
-                      <Link 
-                        to={`/client/maintenance?property_id=${problemData.property_id?.id}`} 
-                        className="main-btn rounded-2 px-3 py-2 w-50-100 text-decoration-none"
-                      >
-                        Request maintenance service
-                      </Link>
-                      <Link 
-                        to={`/client/cleaning-request?property_id=${problemData.property_id?.id}`} 
-                        className="sec-btn rounded-2 px-4 py-2 w-50-100 text-decoration-none"
-                      >
-                        Request cleaning service
-                      </Link>
+                      {problemData.type === 2 && (
+                        <Link 
+                          to={`/client/maintenance?property_id=${problemData.property_id?.id}`} 
+                          className="main-btn rounded-2 px-3 py-2 w-50-100 text-decoration-none"
+                        >
+                          Request maintenance service
+                        </Link>
+                      )}
+                      {problemData.type === 1 && (
+                        <Link 
+                          to={`/client/cleaning-request?property_id=${problemData.property_id?.id}`} 
+                          className="sec-btn rounded-2 px-4 py-2 w-50-100 text-decoration-none"
+                        >
+                          Request cleaning service
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>

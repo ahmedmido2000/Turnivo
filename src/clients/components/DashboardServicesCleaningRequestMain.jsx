@@ -4,7 +4,7 @@ import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { getProperties } from '../../api/propertyApi';
-import { getListsData, getUserCalendar, createCleaningService, getPlans } from '../../api/cleaningServiceApi';
+import { getListsData, getUserCalendar, createCleaningService, getPlans, getMyPlans } from '../../api/cleaningServiceApi';
 import ClientHeader from './ClientHeader';
 
 const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
@@ -15,13 +15,14 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
   
   // Step management
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const [totalSteps, setTotalSteps] = useState(4);
   
   // Data states
   const [properties, setProperties] = useState([]);
   const [listsData, setListsData] = useState(null);
   const [plans, setPlans] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -216,26 +217,43 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
 
   // Fetch plans when "Package" service type is selected
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchPlansData = async () => {
       if (selectedServiceType?.name.toLowerCase() === 'package') {
         try {
           const accessToken = localStorage.getItem('access_token');
-          const plansResponse = await getPlans(accessToken);
-          console.log('Plans Response:', plansResponse);
-          if (plansResponse.status === 1 && plansResponse.data) {
-            const plansData = plansResponse.data[0]?.items || [];
-            console.log('Plans Data:', plansData);
-            setPlans(plansData);
+          
+          // First check if user has active plans
+          const myPlansResponse = await getMyPlans(accessToken);
+          console.log('My Plans Response:', myPlansResponse);
+          
+          if (myPlansResponse.status === 1 && myPlansResponse.data && myPlansResponse.data[0]?.items?.length > 0) {
+            // User is subscribed
+            const userPlans = myPlansResponse.data[0]?.items || [];
+            console.log('User is subscribed. Plans:', userPlans);
+            setPlans(userPlans);
+            setIsSubscribed(true);
+            setTotalSteps(3); // Hide Payment step (Skip step 4)
+          } else {
+            // User is not subscribed, fetch public plans
+            console.log('User is NOT subscribed. Fetching public plans.');
+            const plansResponse = await getPlans(accessToken);
+            if (plansResponse.status === 1 && plansResponse.data) {
+              const publicPlans = plansResponse.data[0]?.items || [];
+              setPlans(publicPlans);
+            }
+            setIsSubscribed(false);
+            setTotalSteps(4); // Show Payment step
           }
         } catch (err) {
-          console.error('Error fetching plans:', err);
+          console.error('Error fetching plans info:', err);
         }
       } else {
         setPlans([]);
+        setTotalSteps(4); // Default to 4 steps for other service types
       }
     };
 
-    fetchPlans();
+    fetchPlansData();
   }, [selectedServiceType]);
 
 
@@ -435,6 +453,14 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
       }
     }
     
+    if (currentStep === 3) {
+      // If subscribed, step 3 is the last step. Submit without going to Step 4.
+      if (isSubscribed) {
+        handleSubmit();
+        return;
+      }
+    }
+    
     if (currentStep === 4) {
       handleSubmit();
       return;
@@ -458,7 +484,8 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
   // Form submission
   const handleSubmit = async () => {
     try {
-      if (!selectedPaymentMethod) {
+      // Payment validation ONLY if NOT subscribed
+      if (!isSubscribed && !selectedPaymentMethod) {
         Swal.fire({ icon: 'warning', title: 'Please select a payment method' });
         return;
       }
@@ -468,6 +495,9 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
 
       // Prepare data for submission
       const submissionData = { ...formData };
+      
+      // If user is already subscribed, let the backend know this is a deduction from an existing package
+      // The API usually handles this based on the plan_id
       
       // Convert array of IDs to comma-separated string
       if (Array.isArray(submissionData.clean_service_addition_service_id)) {
@@ -568,16 +598,18 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
               <span className="step-label">Add-on Services</span>
             </div>
 
-            <div 
-              className={`step ${currentStep >= 4 ? 'active' : ''}`}
-              onClick={() => handleStepClick(4)}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="step-circle">
-                <img src="/assets/cleaning-step-4.svg" alt="contact" />
+            {totalSteps === 4 && (
+              <div 
+                className={`step ${currentStep >= 4 ? 'active' : ''}`}
+                onClick={() => handleStepClick(4)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="step-circle">
+                  <img src="/assets/cleaning-step-4.svg" alt="contact" />
+                </div>
+                <span className="step-label">Payment</span>
               </div>
-              <span className="step-label">Payment</span>
-            </div>
+            )}
           </div>
 
           {/* STEP 1: Property and Package Selection */}
@@ -624,13 +656,18 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
                               e.target.src = '/assets/property-management-card-img.png';
                             }}
                           />
-                          <div className='d-flex flex-column gap-2 align-items-start'>
-                            <div className='villa-badge py-1 px-3 rounded-pill'>
-                              {prop.property_type_id?.name || 'Property'}
+                          <div className='d-flex flex-column gap-2 align-items-start w-100'>
+                            <div className='d-flex justify-content-between align-items-center w-100'>
+                              <h6 className='property-management-card-title m-0 fw-bold'>
+                                {prop.name || 'Unnamed Property'}
+                              </h6>
+                              <div className='villa-badge py-1 px-3 rounded-pill'>
+                                {prop.property_type_id?.name || 'Property'}
+                              </div>
                             </div>
                             <div className="d-flex align-items-center">
                               <img src="/assets/location.svg" className='img-fluid' alt="location" />
-                              <p className="property-management-card-address m-0">{prop.address || 'N/A'}</p>
+                              <p className="property-management-card-address m-0 ms-1">{prop.address || 'N/A'}</p>
                             </div>
                           </div>
                         </div>
@@ -883,12 +920,12 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
 
           {/* STEP 3: Add-on Services */}
           <div className={`step-3-container ${currentStep === 3 ? '' : 'd-none'}`}>
-            <div className="row mt-3 w-100 g-0">
-              <div className="login-title mb-2 mt-2">Service request for property</div>
-              <label htmlFor="notes" className="form-label mb-1">Add-on Services</label>
+            <div className="row mt-3 w-100 g-3">
+              <div className="col-12 login-title mb-2 mt-2">Service request for property</div>
+              <div className="col-12"><label htmlFor="notes" className="form-label mb-1">Add-on Services</label></div>
               
               {listsData?.AdditionService?.map((addon) => (
-                <div key={addon.id} className="col-md-2 mb-3 col-20-per">
+                <div key={addon.id} className="col-md-3 mb-3 col-20-per px-2">
                   <div 
                     className={`bg-light-gray p-3 rounded-3 h-100 ${selectedAddons.find(a => a.id === addon.id) ? 'active' : ''}`}
                     style={{ cursor: 'pointer' }}
@@ -924,23 +961,23 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
           {/* STEP 4: Payment */}
           <div className={`step-4-container ${currentStep === 4 ? '' : 'd-none'}`}>
             <div className="row mt-3 w-100 g-0">
-              <div className="login-title mb-2 mt-2">Service request for property</div>
-              <div className="col-md-6 mb-3">
-                <label htmlFor="notes" className="form-label mb-1">Total cost</label>
+              <div className="login-title mb-4 mt-2">Service request for property</div>
+              <div className="col-md-6 mb-3 pe-md-3">
+                <label htmlFor="notes" className="form-label mb-2">Total cost</label>
                 <div className='total-payments p-3 rounded-3'>
-                  <div className='d-flex justify-content-between gap-4 align-items-center mb-2'>
+                  <div className='d-flex justify-content-between gap-4 align-items-center mb-3'>
                     <h3 className='service-desc m-0'>{selectedPlan?.title || selectedServiceType?.name || 'Service'}</h3>
                     <h4 className='service-price m-0'>${formData.price} </h4>
                   </div>
                   
                   {selectedAddons.length > 0 && (
                     <>
-                      <div className='d-flex justify-content-between gap-4 align-items-center mb-2'>
+                      <div className='d-flex justify-content-between gap-4 align-items-center mb-3'>
                         <h3 className='service-desc m-0'>Add-on services</h3>
                         <h4 className='service-price m-0'>${formData.addition_service_price} </h4>
                       </div>
                       {selectedAddons.map((addon) => (
-                        <div key={addon.id} className='d-flex justify-content-between gap-4 align-items-center mb-2 px-2'>
+                        <div key={addon.id} style={{margin:"0 5px"}} className='d-flex justify-content-between gap-4 align-items-center mb-3 px-2'>
                           <h3 className='property-management-card-address m-0'>{addon.name}</h3>
                           <h4 className='sub-service-price m-0'>${addon.price} </h4>
                         </div>
@@ -948,15 +985,14 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
                     </>
                   )}
                   
-                  <div className='d-flex justify-content-between gap-4 align-items-center'>
-                    <h3 className='service-desc m-0'>Total</h3>
-                    <h4 className='service-total-price m-0'>${formData.total_price} </h4>
+                  <div className='d-flex justify-content-between gap-4 align-items-center mt-3 pt-3 border-top'>
+                    <h3 className='service-desc m-0 fw-bold'>Total</h3>
+                    <h4 className='service-total-price m-0 fw-bold'>${formData.total_price} </h4>
                   </div>
                 </div>
               </div>
-              
-              <div className="col-md-6 mb-3">
-                <label htmlFor="notes" className="form-label mb-1">Payment method </label>
+              <div className="col-md-6 mb-3 ps-md-3">
+                <label htmlFor="notes" className="form-label mb-2">Payment method </label>
                 <div className="payment-methods d-flex gap-2 align-items-center">
                   <div 
                     className={`payment-method-card p-2 rounded-2 ${selectedPaymentMethod === 'card1' ? 'active' : ''}`}

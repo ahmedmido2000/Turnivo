@@ -82,17 +82,43 @@ const GuestContactMain = () => {
         formData.email,
         formData.body
       );
-      
-      toast.success('Message sent successfully!', {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      
-      // Reset body field only
-      setFormData(prev => ({
-        ...prev,
-        body: ''
-      }));
+
+      // Handle API errors (both {field,message} array and nested status:0)
+      if (response.status === 0 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        response.data.forEach(err => toast.error(err.message || err.field || 'An error occurred', { position: 'top-center', autoClose: 4000 }));
+        setLoading(false);
+        return;
+      }
+      if (response.status === 0 && response.message) {
+        toast.error(response.message, { position: 'top-center', autoClose: 4000 });
+        setLoading(false);
+        return;
+      }
+      if (response.status === 1 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const first = response.data[0];
+        if (first.status === 0 && first.message) {
+          toast.error(first.message, { position: 'top-center', autoClose: 4000 });
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (response.status === 1) {
+        toast.success(response.message || 'Message sent successfully!', {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        // Reset body field only
+        setFormData(prev => ({
+          ...prev,
+          body: ''
+        }));
+      } else {
+        toast.error(response.message || 'Failed to send message. Please try again.', {
+          position: "top-center",
+          autoClose: 3000,
+        });
+      }
     } catch (err) {
       toast.error(err.message || 'Failed to send message. Please try again.', {
         position: "top-center",

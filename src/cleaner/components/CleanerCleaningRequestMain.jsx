@@ -405,8 +405,7 @@ const CleanerCleaningRequestMain = ({ onMobileMenuClick }) => {
         ) : (
           <>
             {currentItems.map((item) => (
-              <Link
-                to={`/cleaner/cleaning-details?id=${item.id}`}
+              <div
                 key={item.id}
                 className="d-flex text-decoration-none align-items-center justify-content-between p-3 gap-2 w-100 materials-cards rounded-4 mb-3"
               >
@@ -438,7 +437,7 @@ const CleanerCleaningRequestMain = ({ onMobileMenuClick }) => {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
 
             {filteredMaterials.length > 0 && (

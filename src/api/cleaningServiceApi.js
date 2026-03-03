@@ -25,6 +25,18 @@ export const getUserCalendar = async (accessToken) => {
 };
 
 /**
+ * Get user's own plans/packages
+ * @param {string} accessToken - User's access token
+ * @returns {Promise} API response with user's plans data
+ */
+export const getMyPlans = async (accessToken) => {
+  const response = await axiosInstance.get(
+    `/demo/turnivo/api/web/v1/site/my-plan?access-token=${accessToken}`
+  );
+  return response.data;
+};
+
+/**
  * Get plans/packages
  * @param {string} accessToken - User's access token
  * @returns {Promise} API response with plans data

@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { QRCodeCanvas } from 'qrcode.react';
 import { getPropertyById, getPropertyCalendar, getProperties, createSmartLockRequest, getContactInfo, addPropertyRule } from '../../api/propertyApi';
 import { getSmartLockHistoryCheckin, getSmartLockHistoryCheckout, sendEmailToGuest } from '../../api/smartLockApi';
+import { encodePropertyId } from '../../utils/qrEncoder';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ClientHeader from './ClientHeader';
@@ -636,7 +637,7 @@ const DashboardSmartCheckMain = ({ onMobileMenuClick }) => {
               {selectedProperty ? (
                 <div ref={qrCodeRef} className="d-flex justify-content-center w-100">
                   <QRCodeCanvas 
-                    value={`${window.location.origin}/scan-handler/${selectedProperty.id}`}
+                    value={`${window.location.origin}/scan-handler/${encodePropertyId(selectedProperty.id)}`}
                     size={120}
                     level="H"
                     includeMargin={true}
@@ -953,38 +954,14 @@ const DashboardSmartCheckMain = ({ onMobileMenuClick }) => {
                 </div>
               </div>
               {selectedProperty ? (
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-                    `🏠 PROPERTY INFORMATION\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-                    `📌 Name: ${selectedProperty.name || 'N/A'}\n` +
-                    `🏷️ Type: ${selectedProperty.property_type_id?.name || 'N/A'}\n` +
-                    `🆔 Property ID: ${selectedProperty.id}\n\n` +
-                    `📍 LOCATION\n` +
-                    `──────────────────────\n` +
-                    `🏘️ Address: ${selectedProperty.address || 'N/A'}\n` +
-                    `🌆 City: ${selectedProperty.city || 'N/A'}\n` +
-                    `📮 Postal: ${selectedProperty.postal_code || 'N/A'}\n` +
-                    `🗺️ Coordinates: ${selectedProperty.lat || 'N/A'}, ${selectedProperty.lng || 'N/A'}\n\n` +
-                    `📐 SPECIFICATIONS\n` +
-                    `──────────────────────\n` +
-                    `📏 Area: ${selectedProperty.area || 0} m²\n` +
-                    `🏢 Floors: ${selectedProperty.floor || 0}\n` +
-                    `🚪 Rooms: ${selectedProperty.number_room || 0}\n` +
-                    `🚿 Bathrooms: ${selectedProperty.number_bathroom || 0}\n\n` +
-                    `👤 Co-Host: ${selectedProperty.co_host_id?.name || 'N/A'}\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-                    `🔐 LOGIN / ACCESS\n` +
-                    `──────────────────────\n` +
-                    `If you don't have an account:\n` +
-                    `👉 ${window.location.origin}/client/login\n\n` +
-                    `📱 Property Link:\n` +
-                    `${window.location.origin}/property/${selectedProperty.id}`
-                  )}`}
-                  alt="QR Code"
-                  className="img-fluid"
-                  style={{ width: '250px' }}
-                />
+                <div className="d-flex justify-content-center">
+                  <QRCodeCanvas
+                    value={`${window.location.origin}/scan-handler/${encodePropertyId(selectedProperty.id)}`}
+                    size={250}
+                    level="H"
+                    includeMargin={true}
+                  />
+                </div>
               ) : (
                 <img
                   src="/assets/qr-code-2.png"

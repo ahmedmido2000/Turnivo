@@ -147,6 +147,19 @@ const DashboardServiceDetailsMain = ({ onMobileMenuClick }) => {
                         </p>
                     </div>
 
+                    {/* Login Code */}
+                    {serviceData.login_code && (
+                      <div className="d-flex align-items-center justify-content-between w-100 bg-white rounded-2 px-3 py-2 mt-1" style={{ border: '1.5px dashed #ccc' }}>
+                        <div className="d-flex align-items-center gap-2">
+                          <img src="/assets/key.svg" className='img-fluid' alt="code" onError={(e) => e.target.style.display='none'} />
+                          <p className="property-management-card-address fw-bold m-0">Login Code</p>
+                        </div>
+                        <span className="fw-bold fs-5" style={{ letterSpacing: '4px', color: '#333' }}>
+                          {serviceData.login_code}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Price Section - For Both Cleaning and Maintenance */}
                     <div className="d-flex align-items-center gap-2 px-1">
                         <img src="/assets/dollar-2.svg" className='img-fluid' alt="price" />

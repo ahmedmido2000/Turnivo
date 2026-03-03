@@ -521,7 +521,7 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
           <>
             {/* Render current page items */}
             {currentItems.map((item) => (
-              <Link to={`/cleaner/maintenance-details?id=${item.id}`} key={item.id} className="d-flex text-decoration-none align-items-center justify-content-between p-3 gap-2 w-100 materials-cards rounded-4 mb-3">
+              <div key={item.id} className="d-flex text-decoration-none align-items-center justify-content-between p-3 gap-2 w-100 materials-cards rounded-4 mb-3">
                 <div className="d-flex w-100 align-items-start flex-column flex-md-row gap-2">
                   <img src={item.property_id?.image || '/assets/problem-img-2.png'} className='img-fluid materials-img' alt="location" />   
                   <div className='d-flex flex-column gap-2 align-items-start w-100'>
@@ -543,7 +543,7 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
             
             {/* Only show pagination if there are items */}

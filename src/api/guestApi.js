@@ -7,10 +7,10 @@ import axiosInstance from './axiosConfig';
  * @param {number} property_id - Property ID
  * @returns {Promise} API response with access token
  */
-export const guestLogin = async (email,  temp_code , property_id) => {
+export const guestLogin = async (email, code, property_id) => {
   const response = await axiosInstance.post('/demo/turnivo/api/web/v1/site/guest-login', {
     email,
-     temp_code,
+    code,
     property_id
   });
   return response.data;

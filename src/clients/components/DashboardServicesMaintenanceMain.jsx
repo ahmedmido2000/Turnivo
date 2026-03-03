@@ -268,13 +268,18 @@ const DashboardServicesMaintenanceMain = ({ onMobileMenuClick }) => {
                           e.target.src = '/assets/property-management-card-img.png';
                         }}
                       />
-                      <div className='d-flex flex-column gap-2 align-items-start'>
-                        <div className='villa-badge py-1 px-3 rounded-pill'>
-                          {prop.property_type_id?.name || 'Property'}
+                      <div className='d-flex flex-column gap-2 align-items-start w-100'>
+                        <div className='d-flex justify-content-between align-items-center w-100'>
+                          <h6 className='property-management-card-title m-0 fw-bold'>
+                            {prop.name || 'Unnamed Property'}
+                          </h6>
+                          <div className='villa-badge py-1 px-3 rounded-pill'>
+                            {prop.property_type_id?.name || 'Property'}
+                          </div>
                         </div>
                         <div className="d-flex align-items-center">
                           <img src="/assets/location.svg" className='img-fluid' alt="location" />
-                          <p className="property-management-card-address m-0">{prop.address || 'N/A'}</p>
+                          <p className="property-management-card-address m-0 ms-1">{prop.address || 'N/A'}</p>
                         </div>
                       </div>
                     </div>

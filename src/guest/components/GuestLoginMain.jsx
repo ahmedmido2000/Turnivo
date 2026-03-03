@@ -11,8 +11,8 @@ const GuestLoginMain = () => {
   
   const [formData, setFormData] = useState({
     email: '',
-     temp_code: 'TEMP123', // Temporary code for development - will be dynamic later
-    property_id: 1 // You can set this dynamically based on your needs
+    code: '',
+    property_id: null
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,28 +46,41 @@ const GuestLoginMain = () => {
     setError('');
   };
 
+  // Helper: extract and show API errors
+  const showApiErrors = (response) => {
+    if (response.status === 0 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+      // Format: { status:0, data: [{field, message}] }
+      response.data.forEach(err => {
+        const msg = err.message || err.field || 'An error occurred';
+        toast.error(msg, { position: 'top-center', autoClose: 4000 });
+      });
+      return true;
+    }
+    if (response.status === 0 && response.message) {
+      toast.error(response.message, { position: 'top-center', autoClose: 4000 });
+      return true;
+    }
+    if (response.status === 1 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+      const first = response.data[0];
+      if (first.status === 0 && first.message) {
+        toast.error(first.message, { position: 'top-center', autoClose: 4000 });
+        return true;
+      }
+    }
+    return false;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const response = await guestLogin(formData.email, formData.temp_code, formData.property_id);
-      
-      // Check if response contains error message in data array
-      if (response.status === 1 && response.data && Array.isArray(response.data) && response.data.length > 0) {
-        if (response.data[0].status === 0 && response.data[0].message) {
-          toast.error(response.data[0].message, {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          });
-          setLoading(false);
-          return;
-        }
+      const response = await guestLogin(formData.email, formData.code, formData.property_id);
+
+      if (showApiErrors(response)) {
+        setLoading(false);
+        return;
       }
       
       // Store access token
@@ -135,13 +148,13 @@ const GuestLoginMain = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="temp_code" className="form-label mb-1">temp code</label>
+                    <label htmlFor="code" className="form-label mb-1">temp code</label>
                     <input
                       type="text"
                       className="form-control rounded-2 py-2 px-3"
-                      id="temp_code"
-                      name="temp_code"
-                      value={formData.temp_code}
+                      id="code"
+                      name="code"
+                      value={formData.code}
                       onChange={handleInputChange}
                       placeholder="Enter code"
                       required

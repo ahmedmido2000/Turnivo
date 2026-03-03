@@ -2,6 +2,7 @@
   import './App.css'
 
   import ProtectedRoute, { PublicRoute, ROLES } from './components/ProtectedRoute'
+  import QRProtectedRoute from './components/QRProtectedRoute'
   import Login from './shared/pages/Login'
   
   import ActivationCode from './shared/pages/ActivationCode'
@@ -93,7 +94,7 @@
         <Route path="/how-we-work" element={<HowWeWork />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/activation-code" element={<PublicRoute><ActivationCode /></PublicRoute>} />
-        <Route path="/scan-handler/:propertyId" element={<ScanHandler />} />
+        <Route path="/scan-handler/:token" element={<ScanHandler />} />
         <Route path="/join-confirm-page" element={<JoinConfirmPage />} />
         <Route path="/confirm-provider-steps" element={<ConfirmProviderSteps />} />
         <Route path="/provider-thanks" element={<ProviderThanks />} />
@@ -155,9 +156,9 @@
         <Route path="cleaner/company-policies" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerCompanyPolicies /></ProtectedRoute>} />
         <Route path="cleaner/work-agreement" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerWorkAgreement /></ProtectedRoute>} />
         <Route path="cleaner/maintenance-requests" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerMaintenanceRequest /></ProtectedRoute>} />
-        <Route path="cleaner/maintenance-details" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerMaintenanceDetails /></ProtectedRoute>} />
+        <Route path="cleaner/maintenance-details" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><QRProtectedRoute fallback="/cleaner/maintenance-requests"><CleanerMaintenanceDetails /></QRProtectedRoute></ProtectedRoute>} />
         <Route path="cleaner/cleaning-requests" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerCleaningRequest /></ProtectedRoute>} />
-        <Route path="cleaner/cleaning-details" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerCleaningDetails /></ProtectedRoute>} />
+        <Route path="cleaner/cleaning-details" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><QRProtectedRoute fallback="/cleaner/cleaning-requests"><CleanerCleaningDetails /></QRProtectedRoute></ProtectedRoute>} />
         <Route path="cleaner/calendar" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerCalendar /></ProtectedRoute>} />
         <Route path="cleaner/material-requests" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerMaterialRequest /></ProtectedRoute>} />
         <Route path="cleaner/material-details" element={<ProtectedRoute allowedRoles={[ROLES.CLEANER]}><CleanerMaterialDetails /></ProtectedRoute>} />

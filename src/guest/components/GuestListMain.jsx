@@ -42,13 +42,21 @@ const GuestListMain = () => {
       const property_id = 1; // You can set this dynamically based on guest data
       const response = await guestCheckout(accessToken, property_id);
 
-      // Check if response contains error message in data array
+      // Handle API errors (both {field,message} array and nested status:0)
+      if (response.status === 0 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        response.data.forEach(err => toast.error(err.message || err.field || 'An error occurred', { position: 'top-center', autoClose: 4000 }));
+        setLoading(false);
+        return;
+      }
+      if (response.status === 0 && response.message) {
+        toast.error(response.message, { position: 'top-center', autoClose: 4000 });
+        setLoading(false);
+        return;
+      }
       if (response.status === 1 && response.data && Array.isArray(response.data) && response.data.length > 0) {
-        if (response.data[0].status === 0 && response.data[0].message) {
-          toast.error(response.data[0].message, {
-            position: "top-center",
-            autoClose: 3000,
-          });
+        const first = response.data[0];
+        if (first.status === 0 && first.message) {
+          toast.error(first.message, { position: 'top-center', autoClose: 4000 });
           setLoading(false);
           return;
         }
