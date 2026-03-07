@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { saveUserData, clearUserData, updateUserData, getUserData, getAccessToken } from '../utils/authStorage'
+import { saveUserData, clearUserData, updateUserData, getUserData, getAccessToken, getRoleIdOverride } from '../utils/authStorage'
 
 const ROLE_LABELS = {
   3: 'client',
@@ -15,7 +15,9 @@ const deriveRoleId = (user) => {
 }
 
 const initialUser = getUserData()
-const initialRoleId = deriveRoleId(initialUser)
+// Check for roleId override first (for guest users), then derive from user data
+const storedRoleOverride = getRoleIdOverride()
+const initialRoleId = storedRoleOverride !== null ? storedRoleOverride : deriveRoleId(initialUser)
 
 const initialState = {
   user: initialUser,
@@ -31,14 +33,19 @@ const authSlice = createSlice({
     setCredentials: (state, action) => {
       const payload = action.payload || {}
       const userData = payload.data || null
-      const roleId = deriveRoleId(userData)
+      // Check if this is a guest login attempt to override roleId
+      let roleId = deriveRoleId(userData)
+      
+      if (payload.isGuest || (payload.message && payload.message.toLowerCase().includes('guest'))) {
+        roleId = 6;
+      }
 
       state.user = userData
       state.token = payload.access_token || null
       state.roleId = roleId
       state.role = roleId ? ROLE_LABELS[roleId] ?? null : null
 
-      saveUserData(payload)
+      saveUserData({ ...payload, roleId }) // Save with corrected roleId
     },
     updateUserFromProfile: (state, action) => {
       const updates = action.payload || {}

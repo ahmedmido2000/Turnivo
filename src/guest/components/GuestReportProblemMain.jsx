@@ -13,15 +13,32 @@ import 'react-toastify/dist/ReactToastify.css';
 const GuestReportProblemMain = () => {
   const navigate = useNavigate();
   
+  // Get guest data from localStorage
+  const guestDataStr = localStorage.getItem('guest_data');
+  const guestData = guestDataStr ? JSON.parse(guestDataStr) : null;
+  const tempCode = guestData?.temp_code || '';
+  const propertyId = guestData?.property_id || '';
+
   // State for form inputs
   const [formData, setFormData] = useState({
-    temp_code: 'TEMP123', // Temporary code for development - will be dynamic later
+    temp_code: tempCode,
     type: '1',
     description: '',
-    property_id: 1 // You can set this dynamically based on your needs
+    property_id: propertyId
   });
   
   const [loading, setLoading] = useState(false);
+
+  // Update temp_code and property_id when guestData changes
+  React.useEffect(() => {
+    if (tempCode || guestData?.property_id) {
+      setFormData(prev => ({ 
+        ...prev, 
+        temp_code: tempCode || prev.temp_code,
+        property_id: guestData?.property_id || prev.property_id
+      }));
+    }
+  }, [tempCode, guestData?.property_id]);
 
 
   // Handle form input changes
@@ -39,9 +56,16 @@ const GuestReportProblemMain = () => {
     setLoading(true);
 
     try {
-      const storedToken = localStorage.getItem('guest_access_token');
-      // Temporary: use default token for development if not logged in
-      const accessToken = storedToken || 'q3mdPlSMfSBKo4QrUSXEezb3WU59BLcS';
+      // Get access token from guest_data or access_token in localStorage
+      const guestDataStr = localStorage.getItem('guest_data');
+      const guestData = guestDataStr ? JSON.parse(guestDataStr) : null;
+      const accessToken = guestData?.access_token || localStorage.getItem('access_token');
+      
+      if (!accessToken) {
+        toast.error('Please login first', { position: 'top-center', autoClose: 3000 });
+        navigate('/guest/login');
+        return;
+      }
       
       // Temporarily disabled check for development
       // if (!accessToken) {

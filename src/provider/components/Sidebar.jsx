@@ -98,7 +98,6 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
     if (!ratingDropdownOpen) {
       setActiveItem('ratings');
       // Navigate to the ratings main page when opening the dropdown
-      navigate('/supervisor/guests-ratings');
     }
   };
   
@@ -115,7 +114,6 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
     if (!legalDropdownOpen) {
       setActiveItem('legal');
       // Navigate to the legal main page when opening the dropdown
-      navigate('/supervisor/company-policies');
     }
   };
   

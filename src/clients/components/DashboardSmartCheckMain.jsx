@@ -637,7 +637,7 @@ const DashboardSmartCheckMain = ({ onMobileMenuClick }) => {
               {selectedProperty ? (
                 <div ref={qrCodeRef} className="d-flex justify-content-center w-100">
                   <QRCodeCanvas 
-                    value={`${window.location.origin}/scan-handler/${encodePropertyId(selectedProperty.id)}`}
+                    value={`👤 GUEST:\nVisit: ${window.location.origin}/guest/login?propertyId=${encodePropertyId(selectedProperty.id)}\n\n🔒 STAFF / PROVIDER:\n1. Login first at:\n${window.location.origin}/login\n\n2. After login, open:\n${window.location.origin}/scan-handler/${encodePropertyId(selectedProperty.id)}`}
                     size={120}
                     level="H"
                     includeMargin={true}
@@ -974,7 +974,7 @@ const DashboardSmartCheckMain = ({ onMobileMenuClick }) => {
               {selectedProperty ? (
                 <div className="d-flex justify-content-center">
                   <QRCodeCanvas
-                    value={`${window.location.origin}/scan-handler/${encodePropertyId(selectedProperty.id)}`}
+                    value={`👤 GUEST:\nVisit: ${window.location.origin}/guest/login?propertyId=${encodePropertyId(selectedProperty.id)}\n\n🔒 STAFF / PROVIDER:\n1. Login first at:\n${window.location.origin}/login\n\n2. After login, open:\n${window.location.origin}/scan-handler/${encodePropertyId(selectedProperty.id)}`}
                     size={250}
                     level="H"
                     includeMargin={true}

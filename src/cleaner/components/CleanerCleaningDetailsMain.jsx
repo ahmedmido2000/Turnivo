@@ -167,8 +167,9 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
                 // Timer not started yet
                 setRemainingSeconds(totalSecs);
                 
-                // Only start timer if user came from QR code scan
-                const fromQR = searchParams.get('fromQR') === 'true';
+                // Only start timer if user came from QR code scan (URL param or stored access)
+                const qrAccess = JSON.parse(localStorage.getItem('qrServiceAccess') || 'null');
+                const fromQR = searchParams.get('fromQR') === 'true' || (qrAccess && String(qrAccess.serviceId) === String(id));
                 if (fromQR) {
                   // Save timer start time to localStorage
                   const timerData = {
@@ -604,6 +605,8 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
           localStorage.removeItem(`tasks_${serviceId}`);
           localStorage.removeItem(`final_time_${serviceId}`);
           localStorage.removeItem(`timer_${serviceId}`);
+          // Clear QR access — service is now closed
+          localStorage.removeItem('qrServiceAccess');
         }
         
         // Refresh data

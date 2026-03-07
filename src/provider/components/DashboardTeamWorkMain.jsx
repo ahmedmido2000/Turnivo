@@ -82,7 +82,17 @@ const DashboardTeamWorkMain = ({ onMobileMenuClick }) => {
       if (response.status === 1 && response.data?.[0]) {
         // Handle nested array structure: data: [[ {...}, {...} ]]
         const data = Array.isArray(response.data[0]) ? response.data[0] : response.data;
-        setAvailabilityData(Array.isArray(data) ? data : []);
+        const finalData = Array.isArray(data) ? data : [];
+        setAvailabilityData(finalData);
+
+        // If we have data, set the current week to show the first available date
+        if (finalData.length > 0) {
+          // Sort to find the earliest/relevant date if needed, or just take the first one
+          const earliestDate = new Date(finalData[0].date);
+          if (!isNaN(earliestDate.getTime())) {
+            setCurrentWeekStart(earliestDate);
+          }
+        }
       } else {
         setAvailabilityData([]);
       }
@@ -128,8 +138,12 @@ const DashboardTeamWorkMain = ({ onMobileMenuClick }) => {
     
     return availabilityData.find(item => {
       if (item.date !== dateStr) return false;
-      const fromHour = parseInt(item.time_from.split(':')[0]);
-      const toHour = parseInt(item.time_to.split(':')[0]);
+      // Standardize time format to HH:mm
+      const itemTimeFrom = item.time_from.substring(0, 5);
+      const itemTimeTo = item.time_to.substring(0, 5);
+      
+      const fromHour = parseInt(itemTimeFrom.split(':')[0]);
+      const toHour = parseInt(itemTimeTo.split(':')[0]);
       return slotHour >= fromHour && slotHour < toHour;
     });
   };

@@ -1,13 +1,23 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-const GuestLoginDoneMain = () => {
-  const inputRefs = useRef([]);
 
-  // Focus the first input when component mounts
+const GuestLoginDoneMain = () => {
+  const [guestCode, setGuestCode] = useState('');
+
   useEffect(() => {
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
+    // Get guest code from local storage after login
+    const guestDataStr = localStorage.getItem('guest_data');
+    if (guestDataStr) {
+      try {
+        const loginData = JSON.parse(guestDataStr);
+        // Display the temp code used during login
+        if (loginData.temp_code) {
+          setGuestCode(loginData.temp_code);
+        }
+      } catch (e) {
+        console.error('Error parsing guest data', e);
+      }
     }
   }, []);
 
@@ -25,11 +35,10 @@ const GuestLoginDoneMain = () => {
                 <div className="text-center">
                 <CheckCircleIcon className='fs-1 mb-2' style={{color:'#16B464'}} />
                   <h6 className="form-label mb-2">You are logged in</h6>
-                  <p className="login-description pb-2 mb-2 border-bottom">temp code: #3293820</p>
+                  <p className="login-description pb-2 mb-2 border-bottom">temp code: #{guestCode || 'N/A'}</p>
                   <p className="dashboard-routes-sub pb-2 mb-0">Our team wishes you a pleasant stay</p>
                                     <Link to='/guest/list' 
-                                      type="submit" 
-                                      className="sec-btn w-100 rounded-2 py-2 text-center text-decoration-none"
+                                      className="sec-btn w-100 rounded-2 py-2 text-center text-decoration-none d-block"
                                     >
                                       Continue
                                     </Link>

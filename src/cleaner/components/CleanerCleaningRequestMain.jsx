@@ -34,6 +34,12 @@ const CleanerCleaningRequestMain = ({ onMobileMenuClick }) => {
 
   const accessToken = useSelector(selectAccessToken);
 
+  // Read QR service access — kept in localStorage until service is closed
+  const [qrServiceAccess] = useState(() => {
+    const stored = localStorage.getItem('qrServiceAccess');
+    return stored ? JSON.parse(stored) : null;
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -351,6 +357,18 @@ const CleanerCleaningRequestMain = ({ onMobileMenuClick }) => {
     <section>
       <CleanerHeader title="Cleaning Requests" onMobileMenuClick={onMobileMenuClick} />
       <div className="dashboard-home-content px-3 mt-2">
+        {qrServiceAccess && (
+          <div className="d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" style={{ backgroundColor: '#fff8f0', border: '1.5px solid #f7941d' }}>
+            <span className="fw-semibold" style={{ color: '#f7941d' }}>⚡ You have an active QR service</span>
+            <Link
+              to={`/cleaner/cleaning-details?id=${qrServiceAccess.serviceId}&fromQR=true`}
+              className="btn btn-sm fw-bold px-3"
+              style={{ backgroundColor: '#f7941d', color: '#fff', borderRadius: '8px' }}
+            >
+              Return to Service
+            </Link>
+          </div>
+        )}
         <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
           <div className="search-input-wrapper mt-2">
             <SearchOutlinedIcon className="search-icon" />

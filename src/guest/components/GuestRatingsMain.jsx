@@ -15,17 +15,31 @@ const GuestRatingsMain = () => {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [loading, setLoading] = useState(false);
+  
+  // Get guest data from localStorage
+  const guestDataStr = localStorage.getItem('guest_data');
+  const guestData = guestDataStr ? JSON.parse(guestDataStr) : null;
+  const accessToken = guestData?.access_token || localStorage.getItem('access_token');
+  const tempCode = guestData?.temp_code || '';
+  const propertyId = guestData?.property_id || '';
+
   const [formData, setFormData] = useState({
-    temp_code: 'TEMP123', // Temporary code for development - will be dynamic later
-    property_id: 1, // You can set this dynamically
+    temp_code: tempCode,
+    property_id: propertyId, 
     service_quality: '',
     comment: ''
   });
 
-  // Get guest access token from localStorage
-  const guestData = localStorage.getItem('guest_data');
-  // Temporary: use default token for development if not logged in
-  const accessToken = guestData ? JSON.parse(guestData).access_token : 'q3mdPlSMfSBKo4QrUSXEezb3WU59BLcS';
+  // Update temp_code and property_id when guestData changes
+  React.useEffect(() => {
+    if (tempCode || guestData?.property_id) {
+      setFormData(prev => ({ 
+        ...prev, 
+        temp_code: tempCode || prev.temp_code,
+        property_id: guestData?.property_id || prev.property_id
+      }));
+    }
+  }, [tempCode, guestData?.property_id]);
 
   useEffect(() => {
     // Temporarily disabled for development - will be enabled when temp_code is dynamic

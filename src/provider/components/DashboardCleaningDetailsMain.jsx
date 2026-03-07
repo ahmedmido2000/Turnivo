@@ -13,7 +13,7 @@ const DashboardCleaningDetailsMain = ({ onMobileMenuClick }) => {
   const handleReselectClick = () => {
     const serviceId = searchParams.get('id');
     if (serviceId) {
-      navigate(`/provider/team-work?select=true&service_id=${serviceId}&type=cleaning`);
+      navigate(`/supervisor/team-work?select=true&service_id=${serviceId}&type=cleaning`);
     }
   };
 
@@ -111,7 +111,7 @@ const DashboardCleaningDetailsMain = ({ onMobileMenuClick }) => {
       <div className="dashboard-home-content px-3 mt-2">
         <div className="row">
           <div className="col-12">
-                            <h6 className="property-problem-title mb-2 mt-2">Maintenance details</h6>
+                            <h6 className="property-problem-title mb-2 mt-2">Cleaning details</h6>
                 <div className="d-flex align-items-center justify-content-between p-3 gap-2 w-100 materials-cards rounded-4 mb-3">
       <div className="d-flex w-100 align-items-start flex-column flex-md-row gap-2">
         <img src={serviceDetails.property_id?.image || '/assets/problem-img-2.png'} className='img-fluid materials-img' alt="location" />   
@@ -243,14 +243,16 @@ const DashboardCleaningDetailsMain = ({ onMobileMenuClick }) => {
                 </div>
               </div>
         <div className="d-flex gap-2 align-items-center justify-content-between flex-wrap my-3">
-                      <button
-  className="main-btn rounded-2 px-4 py-2 d-flex justify-content-center align-items-center gap-2 w-50-100"
-  onClick={handleReselectClick}
->
-    <img src="/assets/people.svg" alt="people" />
-  reselect
-                        </button>
-                      <button 
+          {serviceDetails.status?.id !== 2 && (
+            <button
+              className="main-btn rounded-2 px-4 py-2 d-flex justify-content-center align-items-center gap-2 w-50-100"
+              onClick={handleReselectClick}
+            >
+              <img src="/assets/people.svg" alt="people" />
+              reselect
+            </button>
+          )}
+          <button 
             type="submit" 
             className="sec-btn rounded-2 py-2 px-3 d-flex align-items-center justify-content-center gap-2 w-50-100"
           >

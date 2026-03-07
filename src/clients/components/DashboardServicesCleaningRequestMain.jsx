@@ -218,38 +218,37 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
   // Fetch plans when "Package" service type is selected
   useEffect(() => {
     const fetchPlansData = async () => {
-      if (selectedServiceType?.name.toLowerCase() === 'package') {
+      // Logic for selectedServiceType name comparison...
+      const serviceTypeName = selectedServiceType?.name?.toLowerCase() || '';
+      if (serviceTypeName === 'package' || serviceTypeName === 'plan') {
         try {
           const accessToken = localStorage.getItem('access_token');
           
-          // First check if user has active plans
+          // First check if user has active plans (my-plan)
           const myPlansResponse = await getMyPlans(accessToken);
-          console.log('My Plans Response:', myPlansResponse);
           
           if (myPlansResponse.status === 1 && myPlansResponse.data && myPlansResponse.data[0]?.items?.length > 0) {
-            // User is subscribed
+            // User is subscribed - using their existing plans
             const userPlans = myPlansResponse.data[0]?.items || [];
-            console.log('User is subscribed. Plans:', userPlans);
             setPlans(userPlans);
             setIsSubscribed(true);
-            setTotalSteps(3); // Hide Payment step (Skip step 4)
+            setTotalSteps(3); // Skip payment step
           } else {
-            // User is not subscribed, fetch public plans
-            console.log('User is NOT subscribed. Fetching public plans.');
+            // User is not subscribed, fetch public plans (plan)
             const plansResponse = await getPlans(accessToken);
             if (plansResponse.status === 1 && plansResponse.data) {
               const publicPlans = plansResponse.data[0]?.items || [];
               setPlans(publicPlans);
             }
             setIsSubscribed(false);
-            setTotalSteps(4); // Show Payment step
+            setTotalSteps(4); // Show payment step
           }
         } catch (err) {
           console.error('Error fetching plans info:', err);
         }
       } else {
         setPlans([]);
-        setTotalSteps(4); // Default to 4 steps for other service types
+        setTotalSteps(4);
       }
     };
 
@@ -276,11 +275,16 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
 
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
+    
+    // Check if the plan comes from 'my-plan' (has plan_id nested object) or 'plan'
+    const planId = plan.plan_id?.id || plan.id;
+    const planPrice = plan.plan_id?.price || plan.price || 0;
+
     setFormData(prev => ({
       ...prev,
-      plan_id: plan.id,
-      price: plan.price || 0,
-      total_price: (plan.price || 0) + prev.addition_service_price
+      plan_id: planId,
+      price: planPrice,
+      total_price: planPrice + (prev.addition_service_price || 0)
     }));
   };
 
@@ -734,41 +738,56 @@ const DashboardServicesCleaningRequestMain = ({ onMobileMenuClick }) => {
             </div>
 
             {/* Show packages if "Package" service type is selected */}
-            {selectedServiceType?.name.toLowerCase() === 'package' && (
+            {(selectedServiceType?.name?.toLowerCase() === 'package' || selectedServiceType?.name?.toLowerCase() === 'plan') && (
               <div className="row mt-3">
                 {plans && plans.length > 0 ? (
-                  plans.map((plan) => (
-                    <div key={plan.id} className="col-md-4 mb-3">
-                      <div 
-                        className={`shadow p-3 rounded-4 bg-white h-100 d-flex flex-column gap-2 align-items-start justify-content-between ${selectedPlan?.id === plan.id ? 'border border-primary' : ''}`}
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handlePlanSelect(plan)}
-                      >
-                        <div className='d-flex flex-column gap-2'>
-                          <h3 className='dashboard-home-card-2-title-2 m-0'>{plan.name}</h3>
-                          <div className="d-flex gap-2 align-items-center flex-wrap">
-                            <h4 className='dashboard-home-card-2-label-1-sec m-0'>${plan.price || 0}</h4>
-                            <h4 className='dashboard-home-card-2-label-2 m-0'>/{plan.month_duration} month</h4>
+                  plans.map((plan) => {
+                    // Extract data based on whether it's from 'my-plan' or 'plan'
+                    const pId = plan.id;
+                    const pName = plan.plan_id?.name || plan.name;
+                    const pPrice = plan.plan_id?.price || plan.price || 0;
+                    const pDuration = plan.plan_id?.month_duration || plan.month_duration || 1;
+                    const pDescription = plan.plan_id?.description || plan.description;
+                    const pNumberService = plan.plan_id?.number_service || plan.number_service;
+
+                    return (
+                      <div key={pId} className="col-md-4 mb-3">
+                        <div 
+                          className={`shadow p-3 rounded-4 bg-white h-100 d-flex flex-column gap-2 align-items-start justify-content-between ${selectedPlan?.id === pId ? 'border border-primary' : ''}`}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => handlePlanSelect(plan)}
+                        >
+                          <div className='d-flex flex-column gap-2'>
+                            <h3 className='dashboard-home-card-2-title-2 m-0'>{pName}</h3>
+                            <div className="d-flex gap-2 align-items-center flex-wrap">
+                              <h4 className='dashboard-home-card-2-label-1-sec m-0'>${pPrice}</h4>
+                              <h4 className='dashboard-home-card-2-label-2 m-0'>/{pDuration} month</h4>
+                            </div>
+                            {pDescription && (
+                              <p className='package-desc m-0'>{pDescription}</p>
+                            )}
+                            {pNumberService && (
+                              <p className='package-desc m-0'>{pNumberService} services included</p>
+                            )}
+                            {isSubscribed && plan.remainder !== undefined && (
+                              <p className='package-desc m-0 text-primary fw-bold'>{plan.remainder} services remaining</p>
+                            )}
                           </div>
-                          {plan.description && (
-                            <p className='package-desc m-0'>{plan.description}</p>
-                          )}
-                          <p className='package-desc m-0'>{plan.number_service} services included</p>
-                        </div>
-                        <div className="pt-3 mt-3 w-100 d-flex justify-content-center package-button-container">
-                          <button 
-                            className={`package-btn rounded-pill px-4 w-50-100 ${selectedPlan?.id === plan.id ? 'active' : ''}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePlanSelect(plan);
-                            }}
-                          >
-                            {selectedPlan?.id === plan.id ? 'Selected' : 'Choose Package'}
-                          </button>
+                          <div className="pt-3 mt-3 w-100 d-flex justify-content-center package-button-container">
+                            <button 
+                              className={`package-btn rounded-pill px-4 w-50-100 ${selectedPlan?.id === pId ? 'active' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePlanSelect(plan);
+                              }}
+                            >
+                              {selectedPlan?.id === pId ? 'Selected' : 'Choose Package'}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="col-12">
                     <p className="text-muted text-center">Loading packages...</p>

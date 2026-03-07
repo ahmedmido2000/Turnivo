@@ -93,8 +93,15 @@ export const useActivate = () => {
         if (innerStatus === 1 || innerStatus === "1") {
           // Save user data and token to Redux + localStorage
           dispatch(setCredentials(responseData));
-          const roleId = responseData?.data?.user_type;
-          const destination = resolveDashboardPath(roleId);
+          
+          // Check if we have a saved redirect path from QR scan
+          const redirectPath = localStorage.getItem('redirectAfterLogin');
+          const roleId = responseData?.user_type || responseData?.data?.user_type;
+          let destination = resolveDashboardPath(roleId);
+          
+          if (redirectPath) {
+            destination = redirectPath;
+          }
           
           // Show success message
           toast.success(responseData.message || 'Login successful!');
@@ -103,7 +110,7 @@ export const useActivate = () => {
           sessionStorage.removeItem('user_email');
           sessionStorage.removeItem('activation_code');
           
-          // Navigate to dashboard
+          // Navigate to dashboard or saved path
           navigate(destination);
         } else {
           toast.error(responseData.message || 'Activation failed. Please try again.');

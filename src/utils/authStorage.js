@@ -10,6 +10,11 @@ export const saveUserData = (data) => {
   if (data.data) {
     localStorage.setItem('user_data', JSON.stringify(data.data));
   }
+
+  // Save overridden roleId for guest users
+  if (data.roleId !== undefined && data.roleId !== null) {
+    localStorage.setItem('role_id_override', String(data.roleId));
+  }
 };
 
 /**
@@ -48,6 +53,21 @@ export const clearUserData = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('user_data');
   localStorage.removeItem('user_email'); // Clear email from login step
+  localStorage.removeItem('role_id_override'); // Clear guest role override
+  localStorage.removeItem('guest_data'); // Clear guest specific data
+};
+
+/**
+ * Get the roleId override from localStorage (for guest logins)
+ * @returns {number|null} RoleId override or null if not found
+ */
+export const getRoleIdOverride = () => {
+  const override = localStorage.getItem('role_id_override');
+  if (override) {
+    const parsed = Number(override);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  return null;
 };
 
 /**

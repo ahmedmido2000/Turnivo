@@ -246,11 +246,11 @@ const DashboardMaintenanceRequestMain = ({ onMobileMenuClick }) => {
               className="main-btn rounded-2 px-4 py-2 d-flex justify-content-center align-items-center gap-2"
               onClick={(e) => {
                 e.preventDefault();
-                navigate(`/provider/team-work?select=true&service_id=${item.id}&type=maintenance`);
+                navigate(`/supervisor/team-work?select=true&service_id=${item.id}&type=maintenance`);
               }}
             >
               <img src="/assets/people.svg" alt="people" />
-              resellect
+              reselect
             </button>
           </div>
         );

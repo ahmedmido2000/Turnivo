@@ -39,7 +39,8 @@ const GuestListMain = () => {
 
     setLoading(true);
     try {
-      const property_id = 1; // You can set this dynamically based on guest data
+      const guestDataObj = guestData ? JSON.parse(guestData) : null;
+      const property_id = guestDataObj?.property_id || 1;
       const response = await guestCheckout(accessToken, property_id);
 
       // Handle API errors (both {field,message} array and nested status:0)
@@ -67,11 +68,16 @@ const GuestListMain = () => {
           position: "top-center",
           autoClose: 2000,
         });
-        // Clear guest data from localStorage
-        localStorage.removeItem('guest_access_token');
+        
+        // Clear all guest related data from localStorage
         localStorage.removeItem('guest_data');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('role_id_override');
+        localStorage.removeItem('guest_access_token');
+        
         setTimeout(() => {
-          navigate('/guest/login');
+          window.location.href = '/guest/login';
         }, 2000);
       } else {
         toast.error(response.message || 'Checkout failed', {

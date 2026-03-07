@@ -122,6 +122,9 @@ const ScanHandler = () => {
                 try {
                   await providerCheckIn(accessToken, serviceId);
                   
+                  // Store QR service access so the cleaner can navigate back to details
+                  localStorage.setItem('qrServiceAccess', JSON.stringify({ serviceId: String(serviceId), type: 'cleaning' }));
+                  
                   // Show success message
                   setStatusMessage('Check-in Successful!');
                   setStatusSubtitle('Welcome! You are checked in.');
@@ -129,6 +132,7 @@ const ScanHandler = () => {
                   
                   // Wait 5 seconds then redirect to service details with fromQR flag
                   await new Promise(resolve => setTimeout(resolve, 5000));
+                  localStorage.removeItem('redirectAfterLogin'); // Clear redirect after successful check-in
                   navigate(`/cleaner/cleaning-details?id=${serviceId}&fromQR=true`);
                 } catch (error) {
                   setStatusMessage('Check-in Failed');
@@ -176,13 +180,14 @@ const ScanHandler = () => {
             });
             break;
           default:
-            // Redirect to guest login if role is not recognized
+            // Unrecognized role, treat as unauthenticated
+            localStorage.setItem('redirectAfterLogin', window.location.pathname);
             navigate(`/guest/login?propertyId=${propertyId}`);
         }
       } else {
-        // If user is not authenticated, show login as guest option
-        setStatusMessage('Welcome!');
-        setStatusSubtitle('You are not logged in. You can continue as a guest to access this property.');
+        // If user is not authenticated, show choice: Login as Guest or Staff
+        setStatusMessage('QR Scanned Successfully');
+        setStatusSubtitle('Please choose how you want to proceed with this property');
         setStatusType('guest');
       }
     };
@@ -250,15 +255,33 @@ const ScanHandler = () => {
           <p className="dashboard-routes-sub text-muted">{statusSubtitle}</p>
         </div>
 
-        {/* Guest Login Button */}
+        {/* Guest or Provider Options */}
         {statusType === 'guest' && (
           <div className="d-flex flex-column align-items-center gap-3 mt-2">
             <button
-              className="btn btn-lg fw-bold px-5 py-3 rounded-3"
+              className="btn btn-lg fw-bold px-5 py-3 rounded-3 w-100"
               style={{ backgroundColor: '#f7941d', color: '#fff', fontSize: '1.1rem' }}
               onClick={() => navigate(`/guest/login?propertyId=${propertyId}`)}
             >
               Login as Guest
+            </button>
+            
+            <div className="d-flex align-items-center w-100 my-2">
+              <hr className="flex-grow-1" />
+              <span className="mx-2 text-muted">OR</span>
+              <hr className="flex-grow-1" />
+            </div>
+
+            <button
+              className="btn btn-lg fw-bold px-5 py-3 rounded-3 w-100 border-2"
+              style={{ borderColor: '#292760', color: '#292760', fontSize: '1.1rem', backgroundColor: 'transparent' }}
+              onClick={() => {
+                // Store the redirect path for after login
+                localStorage.setItem('redirectAfterLogin', window.location.pathname);
+                navigate('/login');
+              }}
+            >
+              Login as Staff / Provider
             </button>
           </div>
         )}

@@ -1,12 +1,16 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../../store/authSlice';
 import { guestLogin } from '../../api/guestApi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { decodePropertyId } from '../../utils/qrEncoder';
 
 const GuestLoginMain = () => {
   const inputRefs = useRef([]);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   
   const [formData, setFormData] = useState({
@@ -27,7 +31,9 @@ const GuestLoginMain = () => {
   useEffect(() => {
     const propertyIdParam = searchParams.get('propertyId');
     if (propertyIdParam) {
-      const parsedId = Number(propertyIdParam);
+      // Try to decode encoded token first, fallback to raw number
+      const decoded = decodePropertyId(propertyIdParam);
+      const parsedId = decoded ? Number(decoded) : Number(propertyIdParam);
       if (!Number.isNaN(parsedId)) {
         setFormData(prev => ({
           ...prev,
@@ -83,17 +89,29 @@ const GuestLoginMain = () => {
         return;
       }
       
-      // Store access token
-      if (response.access_token) {
-        localStorage.setItem('guest_access_token', response.access_token);
-        localStorage.setItem('guest_data', JSON.stringify(response));
-        toast.success('Login successful!', {
-          position: "top-center",
-          autoClose: 2000,
-        });
-        setTimeout(() => {
-          navigate('/guest/login-successfuly');
-        }, 500);
+      // Store access token and response data
+      if (response.status === 1 && response.data && response.data[0]) {
+        const loginData = response.data[0];
+        if (loginData.access_token) {
+          // Store the whole login data and the temp code and property_id used to login
+          localStorage.setItem('guest_data', JSON.stringify({
+            ...loginData,
+            temp_code: formData.code,
+            property_id: formData.property_id
+          }));
+          
+          // Use Redux to handle state and storage consistently
+          // Force isGuest: true to ensure the system treats them as role 6
+          dispatch(setCredentials({ ...loginData, isGuest: true }));
+
+          toast.success('Login successful!', {
+            position: "top-center",
+            autoClose: 2000,
+          });
+          setTimeout(() => {
+            navigate('/guest/login-successfuly');
+          }, 500);
+        }
       }
     } catch (err) {
       toast.error(err.message || 'Login failed. Please check your credentials.', {

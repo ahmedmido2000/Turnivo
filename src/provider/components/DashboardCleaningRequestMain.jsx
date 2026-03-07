@@ -132,7 +132,7 @@ const DashboardCleaningRequestMain = ({ onMobileMenuClick }) => {
 
   const handleReselectClick = (serviceId) => {
     // Navigate to team selection page with service info
-    navigate(`/provider/team-work?select=true&service_id=${serviceId}&type=cleaning`);
+    navigate(`/supervisor/team-work?select=true&service_id=${serviceId}&type=cleaning`);
   };
   
   const getStatusKey = (status) => {

@@ -5,15 +5,13 @@ import { Person, Settings, Logout } from '@mui/icons-material';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import { Link } from 'react-router-dom';
-import ThumbUpOffAltOutlinedIcon from '@mui/icons-material/ThumbUpOffAltOutlined';
-import ThumbDownOffAltOutlinedIcon from '@mui/icons-material/ThumbDownOffAltOutlined';
-import { getTerms } from '../../api/cleanerApi';
+import { useSelector } from 'react-redux';
+import { getWorkAgreement } from '../../api/termsApi';
 import Swal from 'sweetalert2';
 import ProviderHeader from './ProviderHeader';
 
 const WorkAgreementMain = ({ onMobileMenuClick }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const { token: accessToken } = useSelector((state) => state.auth);
   const [agreementData, setAgreementData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -23,7 +21,7 @@ const WorkAgreementMain = ({ onMobileMenuClick }) => {
     const fetchAgreementData = async () => {
       try {
         setIsLoading(true);
-        const response = await getTerms(2); // ID 2 for Work Agreement
+        const response = await getWorkAgreement(accessToken); 
         if (response.status === 1 && response.data && response.data.length > 0) {
           setAgreementData(response.data[0]);
         }
@@ -39,8 +37,10 @@ const WorkAgreementMain = ({ onMobileMenuClick }) => {
       }
     };
 
-    fetchAgreementData();
-  }, []);
+    if (accessToken) {
+      fetchAgreementData();
+    }
+  }, [accessToken]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -83,8 +83,8 @@ const WorkAgreementMain = ({ onMobileMenuClick }) => {
                   <>
                     <h1 className='policy-title m-0'>{agreementData.title}</h1>
                     <div 
-                      className="policy-container"
-                      dangerouslySetInnerHTML={{ __html: agreementData.content }}
+                      className="policy-container text-start"
+                      dangerouslySetInnerHTML={{ __html: agreementData.content || agreementData.description }}
                     />
                   </>
                 ) : (

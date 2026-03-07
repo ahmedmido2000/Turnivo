@@ -17,21 +17,34 @@ const GuestContactMain = () => {
     body: ''
   });
   
+  const [guestInfo, setGuestInfo] = useState({
+    name: '',
+    avatar: '/assets/user.png',
+    created_at: ''
+  });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    // Get guest data from localStorage
-    const guestData = localStorage.getItem('guest_data');
-    if (guestData) {
+    // Get guest data from localStorage - user info is in guest_data.data
+    const guestDataStr = localStorage.getItem('guest_data');
+    if (guestDataStr) {
       try {
-        const parsedData = JSON.parse(guestData);
+        const guestData = JSON.parse(guestDataStr);
+        // User info is stored in guestData.data (from the API response structure)
+        const userData = guestData?.data || {};
         setFormData(prev => ({
           ...prev,
-          name: parsedData.name || 'Omar Alrajihi',
-          email: parsedData.email || ''
+          name: userData.name || userData.username || '',
+          email: userData.email || ''
         }));
+        setGuestInfo({
+          name: userData.name || userData.username || 'Guest',
+          avatar: userData.avatar || '/assets/user.png',
+          created_at: userData.created_at || new Date().toISOString().split('T')[0]
+        });
       } catch (err) {
         console.error('Error parsing guest data:', err);
       }
@@ -55,9 +68,16 @@ const GuestContactMain = () => {
     setSuccess('');
 
     try {
-      const storedToken = localStorage.getItem('guest_access_token');
-      // Temporary: use default token for development if not logged in
-      const accessToken = storedToken || 'q3mdPlSMfSBKo4QrUSXEezb3WU59BLcS';
+      // Get access token from guest_data or access_token in localStorage
+      const guestDataStr = localStorage.getItem('guest_data');
+      const guestData = guestDataStr ? JSON.parse(guestDataStr) : null;
+      const accessToken = guestData?.access_token || localStorage.getItem('access_token');
+      
+      if (!accessToken) {
+        toast.error('Please login first', { position: 'top-center', autoClose: 3000 });
+        navigate('/guest/login');
+        return;
+      }
       
       // Temporarily disabled check for development
       // if (!accessToken) {
@@ -136,12 +156,15 @@ const GuestContactMain = () => {
         <div className="container">
             <div className="dashboard-home-content px-3 mt-3">
                 <h6 className="dashboard-routes-sub m-0">Contact us</h6>
+                <Link to="/guest/list" className="btn btn-sm mt-2 mb-1 d-inline-flex align-items-center gap-1" style={{color:'#292760', fontWeight:'600'}}>
+                  <span>&#8592;</span> Back to list
+                </Link>
                     <div className="d-flex align-items-center gap-2 my-3">
                         <div className="service-desc mb-2 mt-2">Welcome to Customer Service</div>
-                        <img src="/assets/user.png" className='provider-rate' alt="user" />
+                        <img src={guestInfo.avatar} className='provider-rate' alt="user" />
                         <div>
-                            <h6 className='popup-title m-0'>Omar Alrajihi</h6>
-                            <h6 className="dashboard-routes-sub m-0 mt-1">2024/09/28</h6>
+                            <h6 className='popup-title m-0'>{guestInfo.name}</h6>
+                            <h6 className="dashboard-routes-sub m-0 mt-1">{guestInfo.created_at}</h6>
                         </div>
                     </div>
                     <p className='contact-desc m-0 mb-3'>Do you have questions? Feel free to reach out to us for support or more information about on next stay. Our team is ready to answer all your queries.</p>

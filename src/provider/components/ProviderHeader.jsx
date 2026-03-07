@@ -8,7 +8,6 @@ import { useProviderData } from '../context/ProviderDataContext';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
-  { code: 'ar', label: 'العربية' },
   { code: 'nl', label: 'Nederlands' },
 ];
 
@@ -91,12 +90,13 @@ const ProviderHeader = ({ title, onMobileMenuClick }) => {
               <FontAwesomeIcon icon={faChevronDown} className={`dropdown-chevron ${isLangDropdownOpen ? 'open' : ''}`} style={{ fontSize: '10px' }} />
             </div>
             {isLangDropdownOpen && (
-              <div className="user-dropdown-menu">
+              <div className="user-dropdown-menu px-2" style={{ minWidth: '140px', width: 'max-content' }}>
                 {LANGUAGES.map((lang) => (
                   <div
                     key={lang.code}
-                    className={`dropdown-item d-flex gap-2 align-items-center ${currentLang === lang.code ? 'fw-bold' : ''}`}
+                    className={`dropdown-item d-flex gap-2 align-items-center py-2 ${currentLang === lang.code ? 'fw-bold' : ''}`}
                     onClick={() => handleLangChange(lang.code)}
+                    style={{ whiteSpace: 'nowrap' }}
                   >
                     <span>{lang.label}</span>
                   </div>
@@ -138,13 +138,13 @@ const ProviderHeader = ({ title, onMobileMenuClick }) => {
                   <img src="/assets/user-square.svg" alt="profile" />
                   <span>Profile</span>
                 </div>
-                <div 
+                {/* <div 
                   className="dropdown-item d-flex gap-2 align-items-center"
                   onClick={() => handleDropdownItemClick('settings')}
                 >
                   <img src="/assets/setting-icon.svg" alt="settings" />
                   <span>Settings</span>
-                </div>
+                </div> */}
                 <div 
                   className="dropdown-item d-flex gap-2 align-items-center"
                   onClick={() => handleDropdownItemClick('logout')}

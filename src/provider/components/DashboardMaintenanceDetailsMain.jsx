@@ -15,7 +15,7 @@ const DashboardMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
   const handleReselectClick = () => {
     const serviceId = searchParams.get('id');
     if (serviceId) {
-      navigate(`/provider/team-work?select=true&service_id=${serviceId}&type=maintenance`);
+      navigate(`/supervisor/team-work?select=true&service_id=${serviceId}&type=maintenance`);
     }
   };
   
@@ -132,7 +132,7 @@ const DashboardMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                           {serviceDetails.property_id?.name || 'Property Name'}
                         </h6>
                         <div className={`villa-badge py-1 px-3 rounded-pill`}>
-                          {serviceDetails.property_id?.type || 'Property'}
+                          {serviceDetails.property_id?.property_type_id?.name || serviceDetails.property_id?.type || 'Property'}
                         </div>
                       </div>
                       <div className="d-flex align-items-center">
@@ -275,14 +275,16 @@ const DashboardMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                 </div>
               </div>
         <div className="d-flex gap-2 align-items-center justify-content-between flex-wrap my-3">
-                      <button
-  className="main-btn rounded-2 px-4 py-2 d-flex justify-content-center align-items-center gap-2 w-50-100"
-  onClick={handleReselectClick}
->
-    <img src="/assets/people.svg" alt="people" />
-  reselect
-                        </button>
-                      <button 
+          {serviceDetails.status?.id !== 2 && (
+            <button
+              className="main-btn rounded-2 px-4 py-2 d-flex justify-content-center align-items-center gap-2 w-50-100"
+              onClick={handleReselectClick}
+            >
+              <img src="/assets/people.svg" alt="people" />
+              reselect
+            </button>
+          )}
+          <button 
             type="submit" 
             className="sec-btn rounded-2 py-2 px-3 d-flex align-items-center justify-content-center gap-2 w-50-100"
           >
