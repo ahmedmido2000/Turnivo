@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useContactMutation } from '../../hooks/useSite';
 import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -50,18 +51,30 @@ const ContactUsMain = () => {
   };
 
   return (
-    <div className="py-5 bg-white">
+    <div className="py-5 bg-white overflow-hidden">
       <div className="container">
         <div className="row g-5">
           {/* Contact Information */}
-          <div className="col-lg-5">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="col-lg-5"
+          >
             <h2 className="fw-bold mb-4" style={{ color: 'var(--color-primary)' }}>Get in Touch</h2>
             <p className="text-muted mb-5">
               Have questions about our services or need support? Our team is here to help you.
             </p>
 
             <div className="d-flex flex-column gap-4">
-              <div className="d-flex align-items-center">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="d-flex align-items-center"
+              >
                 <div className="rounded-circle d-flex align-items-center justify-content-center me-3" 
                      style={{ width: '50px', height: '50px', backgroundColor: 'var(--bg-secondary)', color: 'var(--color-primary)' }}>
                   <FontAwesomeIcon icon={faPhone} />
@@ -70,9 +83,15 @@ const ContactUsMain = () => {
                   <h6 className="mb-0 fw-bold">Phone</h6>
                   <p className="mb-0 text-muted">06272167182</p>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="d-flex align-items-center">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="d-flex align-items-center"
+              >
                 <div className="rounded-circle d-flex align-items-center justify-content-center me-3" 
                      style={{ width: '50px', height: '50px', backgroundColor: 'var(--bg-secondary)', color: 'var(--color-primary)' }}>
                   <FontAwesomeIcon icon={faEnvelope} />
@@ -81,9 +100,15 @@ const ContactUsMain = () => {
                   <h6 className="mb-0 fw-bold">Email</h6>
                   <p className="mb-0 text-muted">onnext@gmail.com</p>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="d-flex align-items-center">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                className="d-flex align-items-center"
+              >
                 <div className="rounded-circle d-flex align-items-center justify-content-center me-3" 
                      style={{ width: '50px', height: '50px', backgroundColor: 'var(--bg-secondary)', color: 'var(--color-primary)' }}>
                   <FontAwesomeIcon icon={faMapMarkerAlt} />
@@ -92,12 +117,18 @@ const ContactUsMain = () => {
                   <h6 className="mb-0 fw-bold">Address</h6>
                   <p className="mb-0 text-muted">4517 Washington Ave, Manchester</p>
                 </div>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Contact Form */}
-          <div className="col-lg-7">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="col-lg-7"
+          >
             <div className="p-4 p-md-5 shadow-sm rounded-3 border">
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
@@ -149,18 +180,20 @@ const ContactUsMain = () => {
                     ></textarea>
                   </div>
                   <div className="col-12 mt-4">
-                    <button 
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="submit" 
                       className="main-btn w-100 py-3 rounded-2 fw-bold"
                       disabled={contactMutation.isPending}
                     >
                       {contactMutation.isPending ? 'Sending...' : 'Send Message'}
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </form>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

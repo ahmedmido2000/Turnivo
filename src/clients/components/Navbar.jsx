@@ -84,7 +84,7 @@ const Navbar = () => {
               <Link to='/login' className="sec-btn rounded-2 px-4 py-2 text-decoration-none">
                 Login
               </Link>
-              <Link className="create-account-btn" to="/activation-code">
+              <Link className="create-account-btn" to="/login">
                 Creating an account
               </Link>
             </div>

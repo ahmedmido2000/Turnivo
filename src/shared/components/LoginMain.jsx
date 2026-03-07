@@ -133,7 +133,7 @@ const LoginMain = () => {
               <div className="text-center mt-3">
                 <p className="mb-0 not-have">
                   Don't have an account?{' '}
-                  <Link to="/activation-code" className="text-decoration-none login-create-account">
+                  <Link to="/login" className="text-decoration-none login-create-account">
                     Create an account
                   </Link>
                 </p>
