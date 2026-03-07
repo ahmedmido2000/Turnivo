@@ -196,7 +196,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
         { id: 'my-ratings', label: 'My Ratings', route: '/client/my-ratings' },
       ]
     },
-   {
+    {
       id: 'contact',
       label: 'Contact us',
       iconPath: "/assets/contact-us.svg",

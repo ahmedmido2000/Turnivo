@@ -8,7 +8,7 @@ import { useClientData } from '../context/ClientDataContext';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
-  { code: 'ar', label: 'العربية' },
+  // { code: 'ar', label: 'العربية' },
   { code: 'nl', label: 'Nederlands' },
 ];
 
@@ -46,6 +46,10 @@ const ClientHeader = ({ title, onMobileMenuClick }) => {
   }, []);
 
   const handleLangChange = (code) => {
+    if (code === currentLang) {
+      setIsLangDropdownOpen(false);
+      return;
+    }
     localStorage.setItem('josur_language', code);
     setCurrentLang(code);
     setIsLangDropdownOpen(false);
@@ -91,7 +95,7 @@ const ClientHeader = ({ title, onMobileMenuClick }) => {
               <FontAwesomeIcon icon={faChevronDown} className={`dropdown-chevron ${isLangDropdownOpen ? 'open' : ''}`} style={{ fontSize: '10px' }} />
             </div>
             {isLangDropdownOpen && (
-              <div className="user-dropdown-menu">
+              <div className="user-dropdown-menu" style={{ width: 'max-content', minWidth: '100%' }}>
                 {LANGUAGES.map((lang) => (
                   <div
                     key={lang.code}

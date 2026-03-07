@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getNotifications } from '../../api/notificationApi';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import ClientHeader from './ClientHeader';
 
@@ -8,6 +9,7 @@ const ClientNotificationsMain = ({ onMobileMenuClick }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,6 +53,19 @@ const ClientNotificationsMain = ({ onMobileMenuClick }) => {
   useEffect(() => {
     fetchNotifications();
   }, [currentPage]);
+
+  // Handle notification click
+  const handleNotificationClick = (notification) => {
+    if (notification.url && notification.url.trim() !== "") {
+      // If it's an external URL (starts with http)
+      if (notification.url.startsWith('http')) {
+        window.open(notification.url, '_blank');
+      } else {
+        // If it's an internal route
+        navigate(notification.url);
+      }
+    }
+  };
 
   // Helper function to calculate time ago
   const getTimeAgo = (dateString) => {
@@ -114,6 +129,8 @@ const ClientNotificationsMain = ({ onMobileMenuClick }) => {
                 <div
                   key={notification.id}
                   className={`col-12 mt-2 notification-item ${notification.status === 0 ? 'unread-bg' : ''} d-flex justify-content-between align-items-center gap-3`}
+                  onClick={() => handleNotificationClick(notification)}
+                  style={{ cursor: notification.url ? 'pointer' : 'default' }}
                 >
                   <div className="d-flex align-items-center gap-2">
                     <div className={notification.status === 0 ? 'unread-dot' : 'read-dot'}></div>

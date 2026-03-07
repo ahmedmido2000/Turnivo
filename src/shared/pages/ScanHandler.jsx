@@ -168,9 +168,7 @@ const ScanHandler = () => {
             });
             break;
           case 3: // Client (Role ID: 3) - Redirect to property management
-            navigate('/client/smart-checkin-checkout', { 
-              state: { propertyId } 
-            });
+            navigate(`/client/property-details/${propertyId}`);
             break;
           case 5: // Supervisor (Role ID: 5) - Redirect to smart access
             navigate('/provider/smart-access', { 

@@ -82,16 +82,16 @@ const DashboardContactMain = ({ onMobileMenuClick }) => {
         <form onSubmit={handleSubmit}>
           <div className="row">
             <div className="col-12">
-              <div className="mb-3 w-100">
+              <div className="mb-3 w-100 position-relative">
                 <input
                   type="email"
                   name="email"
-                  className="form-control rounded-2 py-2 px-3 w-100"
+                  className="form-control rounded-2 py-2 px-3 w-100 bg-light-gray-2 border-0"
                   placeholder="E-mail address*"
                   value={formData.email}
-                  onChange={handleInputChange}
+                  readOnly
+                  style={{ cursor: 'not-allowed' }}
                   required
-                  disabled={isLoading}
                 />
               </div>
             </div>

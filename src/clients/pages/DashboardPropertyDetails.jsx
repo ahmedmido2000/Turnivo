@@ -1,11 +1,14 @@
 import DashboardLayout from '../components/DashboardLayout';
 import DashboardPropertyDetailsMain from '../components/DashboardPropertyDetailsMain';
 
-const DashboardPropertyDetails = () => {
+const DashboardPropertyDetails = ({ isToken = false }) => {
   return (
     <DashboardLayout>
       {({ onMobileMenuClick }) => (
-        <DashboardPropertyDetailsMain onMobileMenuClick={onMobileMenuClick} />
+        <DashboardPropertyDetailsMain 
+          onMobileMenuClick={onMobileMenuClick} 
+          isToken={isToken}
+        />
       )}
     </DashboardLayout>
   );

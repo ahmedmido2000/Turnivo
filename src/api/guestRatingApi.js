@@ -52,9 +52,15 @@ export const getMyRatings = async (accessToken, page = 1) => {
  * @returns {Promise} API response
  */
 export const rateService = async (accessToken, service_id, type, rate, comment) => {
+  const formData = new URLSearchParams();
+  formData.append('service_id', service_id);
+  formData.append('type', type);
+  formData.append('rate', rate);
+  formData.append('comment', comment);
+
   const response = await axiosInstance.post(
     `/demo/turnivo/api/web/v1/site/rate-service?access-token=${accessToken}`,
-    { service_id, type, rate, comment },
+    formData,
     {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'

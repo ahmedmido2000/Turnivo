@@ -668,6 +668,11 @@ const DashboardSmartCheckMain = ({ onMobileMenuClick }) => {
           className="sec-btn rounded-2 px-4 py-2 w-50-100"
           data-bs-toggle="modal"
           data-bs-target="#tempAccessModal"
+          onClick={() => {
+            if (selectedProperty) {
+              setTempAccessData(prev => ({ ...prev, service_id: selectedProperty.id }));
+            }
+          }}
         >
           Temp access code
         </button>
@@ -854,25 +859,38 @@ const DashboardSmartCheckMain = ({ onMobileMenuClick }) => {
             </div>
 
             <div className="modal-body">
-              {/* Property Selection */}
-              <div className="mb-3">
-                <label className="property-management-card-address fw-bold mb-2">
-                  Select Property
-                </label>
-                <select
-                  name="service_id"
-                  className="form-select rounded-2 py-2"
-                  value={tempAccessData.service_id}
-                  onChange={handleTempAccessInputChange}
-                >
-                  <option value="">Select a property</option>
-                  {properties.map((prop) => (
-                    <option key={prop.id} value={prop.id}>
-                      {prop.name || prop.address || `Property ${prop.id}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Property Selection - Hide if a property is already selected */}
+              {!selectedProperty && (
+                <div className="mb-3">
+                  <label className="property-management-card-address fw-bold mb-2">
+                    Select Property
+                  </label>
+                  <select
+                    name="service_id"
+                    className="form-select rounded-2 py-2"
+                    value={tempAccessData.service_id}
+                    onChange={handleTempAccessInputChange}
+                  >
+                    <option value="">Select a property</option>
+                    {properties.map((prop) => (
+                      <option key={prop.id} value={prop.id}>
+                        {prop.name || prop.address || `Property ${prop.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {selectedProperty && (
+                <div className="mb-3">
+                  <label className="property-management-card-address fw-bold mb-2">
+                    Selected Property
+                  </label>
+                  <div className="p-2 border rounded-2 bg-light">
+                    {selectedProperty.name || selectedProperty.address || `Property ${selectedProperty.id}`}
+                  </div>
+                </div>
+              )}
 
               {/* Guest Email */}
               <div className="mb-3">

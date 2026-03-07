@@ -107,6 +107,7 @@
         <Route path="client/dashboard" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardHome /></ProtectedRoute>} />
         <Route path="client/property-management" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardPropertyManagement /></ProtectedRoute>} />
         <Route path="client/property-details/:id" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardPropertyDetails /></ProtectedRoute>} />
+        <Route path="client/p/:token" element={<DashboardPropertyDetails isToken={true} />} />
         <Route path="client/create-property" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardCreateProperty /></ProtectedRoute>} />
         <Route path="client/property-problem" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardProperyProblem /></ProtectedRoute>} />
         <Route path="client/property-problem-details" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardPropertyProblemDetails /></ProtectedRoute>} />

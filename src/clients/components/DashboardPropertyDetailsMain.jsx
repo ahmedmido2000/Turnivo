@@ -5,6 +5,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { getPropertyById, getListsData, updateProperty, deleteProperty } from '../../api/propertyApi';
 import ClientHeader from './ClientHeader';
+import { encodePropertyId, decodePropertyId } from '../../utils/qrEncoder';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -43,14 +44,30 @@ const LocationPicker = ({ lat, lang, onLocationSelect }) => {
   return null;
 };
 
-const DashboardPropertyDetailsMain = ({ onMobileMenuClick }) => {
-  const { id } = useParams(); // Get property ID from URL
+const DashboardPropertyDetailsMain = ({ onMobileMenuClick, isToken = false }) => {
+  const { id: routeId, token } = useParams(); // Get property ID or Token from URL
+  const [id, setId] = useState(isToken ? null : routeId);
   const navigate = useNavigate();
   
   // Property data state
   const [property, setProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Decode token if in token mode
+  useEffect(() => {
+    if (isToken && token) {
+      const decodedId = decodePropertyId(token);
+      if (decodedId) {
+        setId(decodedId);
+      } else {
+        setError('Invalid property token');
+        setIsLoading(false);
+      }
+    } else if (!isToken && routeId) {
+      setId(routeId);
+    }
+  }, [isToken, token, routeId]);
 
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
@@ -1062,7 +1079,7 @@ const DashboardPropertyDetailsMain = ({ onMobileMenuClick }) => {
                           src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&ecc=L&data=${encodeURIComponent(
 `🏠 ${property.name}
 ━━━━━━━━━━━━━━━━
-🔗 Link: ${window.location.origin}/client/property-details/${property.id}
+🔗 Link: ${window.location.origin}/client/p/${encodePropertyId(property.id)}
 
 📋 Property Details:
 • Type: ${property.property_type_id?.name || 'N/A'}

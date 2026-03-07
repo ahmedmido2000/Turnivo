@@ -77,7 +77,7 @@ const DashboardServicesMaintenanceMain = ({ onMobileMenuClick }) => {
 
     setLoading(true);
     try {
-      const accessToken = localStorage.getItem('access_token') || 'q3mdPlSMfSBKo4QrUSXEezb3WU59BLcS';
+      const accessToken = localStorage.getItem('access_token');
       
       const response = await rateService(
         accessToken,
@@ -87,10 +87,28 @@ const DashboardServicesMaintenanceMain = ({ onMobileMenuClick }) => {
         comment
       );
 
-      // Check if response contains error message in data array
+      // Check if response contains message in data array
       if (response.status === 1 && response.data && Array.isArray(response.data) && response.data.length > 0) {
-        if (response.data[0].status === 0 && response.data[0].message) {
-          toast.error(response.data[0].message, {
+        const responseData = response.data[0];
+        
+        // Check if message indicates success even if status inside data is 0 or missing
+        const isSuccessMessage = responseData.message?.toLowerCase().includes('successfully') || 
+                                 responseData.message?.toLowerCase().includes('success');
+
+        if (responseData.status === 1 || isSuccessMessage) {
+          // Success case
+          toast.success(responseData.message || 'Rating submitted successfully!', {
+            position: "top-center",
+            autoClose: 2000,
+          });
+          // Reset form
+          setRating(0);
+          setComment('');
+          setLoading(false);
+          return;
+        } else if (responseData.status === 0) {
+          // Actual business logic failure
+          toast.error(responseData.message || "An error occurred", {
             position: "top-center",
             autoClose: 3000,
           });
@@ -99,6 +117,7 @@ const DashboardServicesMaintenanceMain = ({ onMobileMenuClick }) => {
         }
       }
 
+      // Fallback for general status
       if (response.status === 1) {
         toast.success(response.message || 'Rating submitted successfully!', {
           position: "top-center",
