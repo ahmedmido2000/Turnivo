@@ -8,7 +8,7 @@ import { useCleanerData } from '../context/CleanerDataContext';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
-  { code: 'ar', label: 'العربية' },
+  // { code: 'ar', label: 'العربية' },
   { code: 'nl', label: 'Nederlands' },
 ];
 
@@ -47,6 +47,10 @@ const CleanerHeader = ({ title, onMobileMenuClick }) => {
   }, []);
 
   const handleLangChange = (code) => {
+    if (code === currentLang) {
+      setIsLangDropdownOpen(false);
+      return;
+    }
     localStorage.setItem('josur_language', code);
     setCurrentLang(code);
     setIsLangDropdownOpen(false);
@@ -92,7 +96,7 @@ const CleanerHeader = ({ title, onMobileMenuClick }) => {
               <FontAwesomeIcon icon={faChevronDown} className={`dropdown-chevron ${isLangDropdownOpen ? 'open' : ''}`} style={{ fontSize: '10px' }} />
             </div>
             {isLangDropdownOpen && (
-              <div className="user-dropdown-menu">
+              <div className="user-dropdown-menu" style={{ width: 'max-content', minWidth: '100%' }}>
                 {LANGUAGES.map((lang) => (
                   <div
                     key={lang.code}
@@ -144,13 +148,6 @@ const CleanerHeader = ({ title, onMobileMenuClick }) => {
                 >
                   <img src="/assets/user-square.svg" alt="profile" />
                   <span>Profile</span>
-                </div>
-                <div 
-                  className="dropdown-item d-flex gap-2 align-items-center"
-                  onClick={() => handleDropdownItemClick('settings')}
-                >
-                  <img src="/assets/setting-icon.svg" alt="settings" />
-                  <span>Settings</span>
                 </div>
                 <div 
                   className="dropdown-item d-flex gap-2 align-items-center"

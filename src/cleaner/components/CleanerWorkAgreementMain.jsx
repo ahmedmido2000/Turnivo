@@ -2,23 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectAccessToken } from '../../store/authSlice';
-import { getTerms } from '../../api/termsApi';
+import { getWorkAgreement } from '../../api/termsApi';
 import Swal from 'sweetalert2';
 import CleanerHeader from './CleanerHeader';
 
 const CleanerWorkAgreementMain = ({ onMobileMenuClick }) => {
-  const [terms, setTerms] = useState(null);
+  const [agreement, setAgreement] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const accessToken = useSelector(selectAccessToken);
 
-  // Fetch terms on component mount
+  // Fetch agreement on component mount
   useEffect(() => {
-    const fetchTerms = async () => {
+    const fetchAgreement = async () => {
       try {
         setIsLoading(true);
-        const response = await getTerms(accessToken);
+        const response = await getWorkAgreement(accessToken);
         if (response.status === 1 && response.data) {
-          setTerms(response.data[0]);
+          setAgreement(response.data[0]);
         }
       } catch (error) {
         Swal.fire({
@@ -32,7 +32,7 @@ const CleanerWorkAgreementMain = ({ onMobileMenuClick }) => {
     };
 
     if (accessToken) {
-      fetchTerms();
+      fetchAgreement();
     }
   }, [accessToken]);
 
@@ -48,19 +48,22 @@ const CleanerWorkAgreementMain = ({ onMobileMenuClick }) => {
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
-        ) : terms ? (
+        ) : agreement ? (
           <div className="d-flex flex-column gap-2 align-items-center justify-content-center text-center p-md-5 p-4">
-            <h1 className='policy-title m-0'>{terms.title}</h1>
+            <h1 className='policy-title m-0'>{agreement.title}</h1>
             <div className="policy-container">
               <div
                 className='policy-content'
-                dangerouslySetInnerHTML={{ __html: terms.content }}
+                dangerouslySetInnerHTML={{ __html: agreement.content || agreement.description }}
               />
             </div>
           </div>
         ) : (
-          <div className="d-flex justify-content-center align-items-center p-5">
-            <p>No data available</p>
+          <div className="text-center mt-5 py-5">
+            <div className="mb-3">
+              <img src="/assets/scan-barcode.svg" alt="No data" style={{ width: '80px', opacity: 0.3 }} />
+            </div>
+            <h5 className="text-muted fw-normal">No work agreement available</h5>
           </div>
         )}
       </div>

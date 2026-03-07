@@ -630,8 +630,10 @@ footer {
   white-space: nowrap;
 }
 
-.subitem:hover {
+.subitem:hover,
+.subitem.active {
   color: var(--color-secondary);
+  font-weight: 600;
 }
 
 /* Bottom section */

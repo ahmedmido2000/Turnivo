@@ -121,9 +121,12 @@ const CleanerMyProblemsMain = ({ onMobileMenuClick }) => {
             </div>
           </div>
         ) : filteredProblems.length === 0 ? (
-          <div className="text-center mt-4">
-            <img src="/assets/empty-state.svg" alt="No data" className="mb-3" style={{ width: '150px', opacity: 0.5 }} />
-            <p className="text-muted">No problems reported yet</p>
+          <div className="text-center mt-5 py-5">
+            <div className="mb-3">
+              <img src="/assets/warning.svg" alt="No data" style={{ width: '80px', opacity: 0.3 }} />
+            </div>
+            <h5 className="text-muted fw-normal">No problems reported yet</h5>
+            <p className="text-muted small">Try adjusting your search or check back later</p>
           </div>
         ) : (
           <div className="row mt-3">

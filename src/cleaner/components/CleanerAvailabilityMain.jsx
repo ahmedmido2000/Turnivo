@@ -17,7 +17,8 @@ const CleanerAvailabilityMain = ({ onMobileMenuClick }) => {
     userMobile, 
     userAddress, 
     userDescription, 
-    userStatus
+    userStatus,
+    refreshUserInfo
   } = useCleanerData();
 
   // State for edit mode
@@ -45,6 +46,17 @@ const CleanerAvailabilityMain = ({ onMobileMenuClick }) => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // If field is mobile, only allow numbers
+    if (name === 'mobile') {
+      const numericValue = value.replace(/[^0-9+]/g, '');
+      setEditData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+      return;
+    }
+
     setEditData(prev => ({
       ...prev,
       [name]: value
@@ -157,6 +169,11 @@ const CleanerAvailabilityMain = ({ onMobileMenuClick }) => {
               setFormData(updatedData);
               setEditData(updatedData);
             }
+          }
+          
+          // Refresh the global context to update Sidebar and Header
+          if (refreshUserInfo) {
+            refreshUserInfo();
           }
         } catch (fetchError) {
           console.error('Error fetching updated user data:', fetchError);

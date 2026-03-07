@@ -508,7 +508,7 @@ const CleanerMaterialRequestMain = ({ onMobileMenuClick }) => {
                                 handleCancelOrder(order.id);
                               }}
                             >
-                              report problem
+                              Cancel Order
                             </button>
                           )}
                         </div>

@@ -36,7 +36,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
       case '/cleaner/material-requests':
       case '/cleaner/material-details': return 'service';
       case '/cleaner/calendar':
-      case '/cleaner/availability': return 'calendar';
+      case '/cleaner/availability': return 'user-profile';
       case '/cleaner/guest-ratings': return 'ratings';
       case '/cleaner/training':
       case '/cleaner/training-details': return 'training';
@@ -102,8 +102,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
     // Always make it active when toggling
     if (!ratingDropdownOpen) {
       setActiveItem('ratings');
-      // Navigate to the ratings main page when opening the dropdown
-      navigate('/cleaner/guest-ratings');
+      // Only toggle the dropdown, don't navigate
     }
   };
   
@@ -122,8 +121,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
     // Always make it active when toggling
     if (!legalDropdownOpen) {
       setActiveItem('legal');
-      // Navigate to the legal main page when opening the dropdown
-      navigate('/cleaner/company-policies');
+      // Only toggle the dropdown, don't navigate
     }
   };
 
@@ -168,8 +166,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
     // Always make it active when toggling
     if (!smartAccessDropdownOpen) {
       setActiveItem('smart-access');
-      // Navigate to the smart access main page when opening the dropdown
-      navigate('/cleaner/smart-lock-requests');
+      // Only toggle the dropdown, don't navigate
     }
   };
   
@@ -228,7 +225,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
       hasDropdown: true,
       dropdownOpen: legalDropdownOpen,
       onToggle: toggleLegalDropdown,
-      route: '/cleaner/company-policies',
+      route: '/cleaner/work-agreement',
       subItems: [
         { id: 'work-agreement', label: 'Work Agreement', route: '/cleaner/work-agreement' },
         { id: 'company-policies', label: 'Company Policies', route: '/cleaner/company-policies' }
@@ -439,7 +436,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
                     {item.subItems.map((subItem) => (
                       <div
                         key={subItem.id}
-                        className="subitem"
+                        className={`subitem ${location.pathname === subItem.route ? 'active' : ''}`}
                         onClick={() => handleSubItemClick(subItem, item.id)}
                       >
                         {subItem.label}

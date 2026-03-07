@@ -42,6 +42,13 @@ const CleanerCalendarMain = ({ onMobileMenuClick }) => {
         if (response.status === 1 && Array.isArray(response.data)) {
           const flat = response.data.flat().filter(Boolean);
           setCalendarData(flat);
+
+          // If there's data and no date is explicitly selected yet, 
+          // set current view to the date of the first item
+          if (flat.length > 0) {
+            const firstDate = new Date(flat[0].date);
+            setCurrentDate(firstDate);
+          }
         } else {
           setCalendarData([]);
         }
@@ -109,14 +116,25 @@ const CleanerCalendarMain = ({ onMobileMenuClick }) => {
   const existingSlots = calendarData.length > 0 
     ? Array.from(
         new Set(
-          calendarData.map((item) => `${item.time_from || ''}-${item.time_to || ''}`).filter((slot) => slot !== '-')
+          calendarData.map((item) => {
+            // Remove seconds from time strings if they exist (e.g., "12:00:00" -> "12:00")
+            const from = item.time_from?.substring(0, 5) || '';
+            const to = item.time_to?.substring(0, 5) || '';
+            return `${from}-${to}`;
+          }).filter((slot) => slot !== '-')
         )
       )
     : [];
   
   const generatedSlots = generateTimeSlots();
-  const allSlots = Array.from(new Set([...generatedSlots, ...existingSlots])).sort();
-  const timeSlots = allSlots.length > 0 ? allSlots : generatedSlots;
+  // Standardize generated slots too for comparison
+  const standardizedGenerated = generatedSlots.map(s => {
+    const [f, t] = s.split('-');
+    return `${f.substring(0, 5)}-${t.substring(0, 5)}`;
+  });
+
+  const allSlots = Array.from(new Set([...standardizedGenerated, ...existingSlots])).sort();
+  const timeSlots = allSlots;
 
   const getStatusBadge = (status) => {
     if (status === 1) return { className: 'third-btn-sm', label: 'At work' };
@@ -342,9 +360,13 @@ const CleanerCalendarMain = ({ onMobileMenuClick }) => {
                         <tr key={slot}>
                           <td className="table-time">{from}</td>
                           {displayDates.map((date) => {
-                            const match = calendarData.find(
-                              (item) => item.date === date && `${item.time_from}-${item.time_to}` === slot
-                            );
+                            const match = calendarData.find((item) => {
+                              const itemFrom = item.time_from?.substring(0, 5);
+                              const itemTo = item.time_to?.substring(0, 5);
+                              const itemSlot = `${itemFrom}-${itemTo}`;
+                              return item.date === date && itemSlot === slot;
+                            });
+                            
                             if (!match) {
                               // Empty cell - clickable
                               return (
