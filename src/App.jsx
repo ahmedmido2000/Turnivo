@@ -3,6 +3,7 @@
 
   import ProtectedRoute, { PublicRoute, ROLES } from './components/ProtectedRoute'
   import QRProtectedRoute from './components/QRProtectedRoute'
+  import NotificationListener from './components/NotificationListener'
   import Login from './shared/pages/Login'
   
   import ActivationCode from './shared/pages/ActivationCode'
@@ -89,7 +90,9 @@
 
   function App() {
     return (
-      <Routes>
+      <>
+        <NotificationListener />
+        <Routes>
         {/* shared - Public Routes */}
         <Route path="/how-we-work" element={<HowWeWork />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -188,6 +191,7 @@
         {/* 404 - Redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </>
     )
   }
 

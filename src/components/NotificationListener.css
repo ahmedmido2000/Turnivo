@@ -1,0 +1,129 @@
+.turnivo-notification-toast {
+  border: 1px solid var(--border-color-light) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(140deg, #ffffff 0%, var(--bg-secondary) 100%) !important;
+  box-shadow: var(--shadow-md) !important;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.turnivo-notification-toast .Toastify__close-button {
+  color: var(--color-primary);
+  opacity: 0.9;
+}
+
+.turnivo-notification-toast .Toastify__close-button:hover {
+  opacity: 1;
+}
+
+.turnivo-notification-toast-body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.turnivo-notification-toast-progress {
+  background: linear-gradient(
+    90deg,
+    var(--color-secondary) 0%,
+    var(--color-primary) 100%
+  ) !important;
+}
+
+.turnivo-notification-card {
+  align-items: stretch;
+  cursor: default;
+  display: flex;
+  font-family: var(--font-family-primary), sans-serif;
+  min-height: 92px;
+  width: 100%;
+}
+
+.turnivo-notification-accent {
+  background: linear-gradient(
+    180deg,
+    var(--color-secondary) 0%,
+    var(--color-primary) 100%
+  );
+  display: block;
+  min-width: 6px;
+}
+
+.turnivo-notification-main {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  width: 100%;
+}
+
+.turnivo-notification-icon-wrap {
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
+  border-radius: 10px;
+  display: flex;
+  flex-shrink: 0;
+  height: 46px;
+  justify-content: center;
+  width: 46px;
+}
+
+.turnivo-notification-icon {
+  border-radius: 8px;
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.turnivo-notification-icon-fallback {
+  color: var(--color-text-inverse);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.5px;
+}
+
+.turnivo-notification-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.turnivo-notification-title {
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.turnivo-notification-body {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.35;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.turnivo-notification-action {
+  align-self: flex-start;
+  background: rgba(245, 147, 49, 0.12);
+  border: 1px solid rgba(245, 147, 49, 0.35);
+  border-radius: 999px;
+  color: var(--color-secondary-dark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  margin-top: 2px;
+  padding: 2px 10px;
+}
